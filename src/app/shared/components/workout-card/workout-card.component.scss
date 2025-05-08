@@ -1,0 +1,34 @@
+.workout-card {
+  @include responsive-card;
+  @include fade-in;
+
+  mat-card-header {
+    @include card-header;
+  }
+
+  mat-card-content {
+    @include responsive-font(14px, 16px);
+  }
+
+  mat-card-actions {
+    @include flex-center;
+    gap: 8px;
+    padding: 16px;
+
+    button {
+      @include primary-button;
+    }
+  }
+
+  .notes {
+    @include responsive-font(12px, 14px);
+    color: #666;
+    font-style: italic;
+    margin-top: 16px;
+  }
+
+  mat-chip-listbox {
+    display: inline-block;
+    margin-left: 8px;
+  }
+} 

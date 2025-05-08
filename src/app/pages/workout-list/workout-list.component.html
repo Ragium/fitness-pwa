@@ -1,0 +1,55 @@
+<div class="workout-list-container">
+    <div class="header">
+      <h1>Edzéseim</h1>
+      <button mat-raised-button color="primary" [routerLink]="['/new-workout']" routerLinkActive="active">
+        <mat-icon>add</mat-icon>
+        Új edzés
+      </button>
+    </div>
+  
+    <div class="filters">
+      <mat-form-field>
+        <mat-label>Szűrés típus szerint</mat-label>
+        <mat-select [(ngModel)]="selectedType" (selectionChange)="onTypeChange()">
+          <mat-option value="all">Összes</mat-option>
+          <mat-option value="cardio">Kardió</mat-option>
+          <mat-option value="biceps">Bicepsz</mat-option>
+          <mat-option value="triceps">Tricepsz</mat-option>
+          <mat-option value="chest">Mellizom</mat-option>
+          <mat-option value="back">Hátizom</mat-option>
+          <mat-option value="shoulders">Vállizom</mat-option>
+          <mat-option value="legs">Lábizom</mat-option>
+          <mat-option value="abs">Hasizom</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-slide-toggle [(ngModel)]="useOnlineFilter" (change)="loadWorkouts()">
+        Online szűrés (backend)
+      </mat-slide-toggle>
+    </div>
+  
+    <div class="workout-grid">
+      <app-workout-card
+        *ngFor="let workout of filteredWorkouts"
+        [workout]="workout"
+        (delete)="onDeleteWorkout($event)"
+        (edit)="editWorkout($event)">
+      </app-workout-card>
+    </div>
+  
+    <div *ngIf="filteredWorkouts.length === 0" class="no-workouts">
+      <mat-icon>fitness_center</mat-icon>
+      <p>Nincsenek edzések a kiválasztott szűrővel.</p>
+      <button mat-raised-button color="primary" routerLink="/new-workout">
+        <mat-icon>add</mat-icon>
+        Új edzés létrehozása
+      </button>
+    </div>
+  
+    <div *ngIf="isLoading" class="loading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Adatok betöltése...</p>
+    </div>
+  
+    <p class="date">{{ currentDate | date:'fullDate': 'hu-HU' }}</p>
+  </div>
+  

@@ -1,0 +1,74 @@
+.workout-form-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  
+    mat-card {
+      padding: 20px;
+    }
+  
+    .form-row {
+      margin-bottom: 20px;
+      width: 100%;
+  
+      mat-form-field {
+        width: 100%;
+      }
+    }
+  
+    .exercises-section {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #1e1a1d;
+      border-radius: 8px;
+  
+      h3 {
+        margin-bottom: 20px;
+        color: #f9a9d9;
+      }
+  
+      .exercise-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        align-items: start;
+        padding: 15px;
+        background-color: #1e1a1d;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        position: relative;
+  
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr;
+        }
+  
+        button[mat-icon-button] {
+          position: relative;
+          top: 0;
+          right: 0;
+          color: #f9a9d9;
+        }
+      }
+  
+      button[mat-stroked-button] {
+        margin-top: 10px;
+        
+        mat-icon {
+          margin-right: 8px;
+        }
+      }
+    }
+  
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 30px;
+  
+      button {
+        min-width: 120px;
+      }
+    }
+  }
+  
+  
