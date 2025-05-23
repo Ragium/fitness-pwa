@@ -67,38 +67,7 @@ import { Workout } from '../../models/workout.model';
       </mat-card-actions>
     </mat-card>
   `,
-  styles: [`
-    .workout-card {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    mat-card-header {
-      margin-bottom: 16px;
-    }
-
-    mat-card-content {
-      flex: 1;
-    }
-
-    mat-card-actions {
-      display: flex;
-      justify-content: flex-end;
-      padding: 8px 16px;
-    }
-
-    .notes {
-      margin-top: 16px;
-      font-style: italic;
-      color: #666;
-    }
-
-    mat-chip-listbox {
-      display: inline-block;
-      margin-left: 8px;
-    }
-  `]
+  styleUrls: ['./workout-card.component.scss']
 })
 export class WorkoutCardComponent {
   @Input() workout!: Workout;

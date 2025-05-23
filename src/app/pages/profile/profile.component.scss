@@ -1,0 +1,41 @@
+@import '../../../styles.scss';
+
+.profile-container {
+  @include flex-center();
+  padding: 20px;
+}
+
+mat-card {
+  width: 100%;
+  max-width: 600px;
+  @include elevation(4);
+}
+
+.profile-divider {
+  margin: 20px 0;
+}
+
+.profile-info,
+.profile-form,
+.password-change,
+.weight-tracking {
+  margin-bottom: 20px;
+}
+
+h3 {
+  margin-bottom: 10px;
+}
+
+.form-row {
+  margin-bottom: 15px;
+}
+
+.form-actions {
+  @include flex-center(row);
+  gap: 10px;
+}
+
+mat-spinner {
+  margin-right: 8px;
+}
+

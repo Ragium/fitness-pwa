@@ -1,46 +1,44 @@
 import { Injectable, inject } from '@angular/core';
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, User as FirebaseUser } from '@angular/fire/auth';
+import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, User, onAuthStateChanged, updatePassword, browserLocalPersistence, browserSessionPersistence, setPersistence, sendPasswordResetEmail } from '@angular/fire/auth';
 import { BehaviorSubject, Observable, from } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-import { IndexedDBService } from './indexeddb.service';
-import { User } from '../models/user.model';
+import { User as CustomUser } from '../models/user.model';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUserSubject = new BehaviorSubject<FirebaseUser | null>(null);
-  currentUser$ = this.currentUserSubject.asObservable();
   private auth: Auth = inject(Auth);
-  private indexedDBService: IndexedDBService = inject(IndexedDBService);
+  private userService: UserService = inject(UserService);
+  private userSubject = new BehaviorSubject<User | null | undefined>(undefined);
 
   constructor() {
-    this.auth.onAuthStateChanged(user => {
-      this.currentUserSubject.next(user);
+    onAuthStateChanged(this.auth, (user) => {
+      this.userSubject.next(user);
     });
+  }
+
+  isUserLoggedIn(): Observable<User | null | undefined> {
+    return this.userSubject.asObservable();
   }
 
   signup(email: string, password: string) {
     return from(createUserWithEmailAndPassword(this.auth, email, password));
   }
 
-  login(email: string, password: string) {
-    return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
-      tap(userCredential => {
-        const user = userCredential.user;
-        const userData: User = {
-          id: user.uid,
-          email: user.email || '',
-          name: {
-            firstname: user.displayName?.split(' ')[0] || '',
-            lastname: user.displayName?.split(' ')[1] || ''
-          },
-          username: user.displayName || '',
-          age: 0,
-          height: 0,
-          weight: 0
-        };
-        this.indexedDBService.saveUser(userData);
+  updateUserProfile(displayName: string) {
+    const user = this.auth.currentUser;
+    if (user) {
+      return from(updateProfile(user, { displayName }));
+    }
+    return from(Promise.reject('Nincs bejelentkezett felhasználó'));
+  }
+
+  login(email: string, password: string, rememberMe: boolean = false) {
+    const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
+    return from(
+      setPersistence(this.auth, persistence).then(() => {
+        return signInWithEmailAndPassword(this.auth, email, password);
       })
     );
   }
@@ -49,33 +47,19 @@ export class AuthService {
     return from(signOut(this.auth));
   }
 
-  isUserLoggedIn(): Observable<FirebaseUser | null> {
-    return new Observable(subscriber => {
-      this.auth.onAuthStateChanged(user => {
-        if (user) {
-          const userData: User = {
-            id: user.uid,
-            email: user.email || '',
-            name: {
-              firstname: user.displayName?.split(' ')[0] || '',
-              lastname: user.displayName?.split(' ')[1] || ''
-            },
-            username: user.displayName || '',
-            age: 0,
-            height: 0,
-            weight: 0
-          };
-          this.indexedDBService.saveUser(userData);
-        }
-        subscriber.next(user);
-      });
-    });
+  getCurrentUser(): User | null {
+    return this.auth.currentUser;
   }
 
-  updateUserProfile(displayName: string) {
-    if (!this.auth.currentUser) {
-      throw new Error('Nincs bejelentkezett felhasználó');
+  updateUserPassword(newPassword: string) {
+    const user = this.auth.currentUser;
+    if (user) {
+      return from(updatePassword(user, newPassword));
     }
-    return from(updateProfile(this.auth.currentUser, { displayName }));
+    return from(Promise.reject('Nincs bejelentkezett felhasználó'));
+  }
+
+  sendPasswordResetEmail(email: string): Observable<void> {
+    return from(sendPasswordResetEmail(this.auth, email));
   }
 }

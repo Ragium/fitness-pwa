@@ -1,52 +1,118 @@
 import { Injectable, inject } from '@angular/core';
-import { Firestore, collection, doc, setDoc, getDoc, collectionData, deleteDoc } from '@angular/fire/firestore';
-import { User } from '../../shared/models/user.model';
-import { Observable, from, map, switchMap, of } from 'rxjs';
-import { IndexedDBService } from './indexeddb.service';
+import { Firestore, collection, doc, setDoc, getDoc, collectionData, deleteDoc, onSnapshot, getDocs, query, where } from '@angular/fire/firestore';
+import { User, WeightEntry } from '../../shared/models/user.model';
+import { Observable, from, map, switchMap, of, BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
   private firestore: Firestore = inject(Firestore);
-  private indexedDBService: IndexedDBService = inject(IndexedDBService);
-  collectionName = "users";
+  private collectionName = "users";
+  private userCache = new BehaviorSubject<Map<string, User>>(new Map());
 
-  createUserProfile(user: User) {
-    const userRef = doc(this.firestore, this.collectionName, user.id);
-    this.indexedDBService.saveUser(user);
-    return from(setDoc(userRef, user));
+  constructor() {}
+
+  getById(id: string): Observable<User | null> {
+    const userRef = doc(this.firestore, this.collectionName, id);
+    return new Observable<User | null>(observer => {
+      const unsubscribe = onSnapshot(userRef, 
+        { includeMetadataChanges: true },
+        (doc) => {
+          const source = doc.metadata.fromCache ? "local cache" : "server";
+          console.log("Profil adatok innen érkeztek: " + source);
+          
+          if (doc.exists()) {
+            const user = { id: doc.id, ...doc.data() } as User;
+            // Frissítjük a cache-t
+            const currentCache = this.userCache.value;
+            currentCache.set(id, user);
+            this.userCache.next(currentCache);
+            observer.next(user);
+          } else {
+            observer.next(null);
+          }
+        },
+        (error) => {
+          console.error('Hiba a felhasználó lekérdezése során:', error);
+          observer.error(error);
+        }
+      );
+
+      return () => unsubscribe();
+    });
   }
 
   getAll(): Observable<User[]> {
     const usersRef = collection(this.firestore, this.collectionName);
-    return collectionData(usersRef, { idField: 'id' }) as Observable<User[]>;
+    return new Observable<User[]>(observer => {
+      const unsubscribe = onSnapshot(usersRef, 
+        { includeMetadataChanges: true },
+        (snapshot) => {
+          const source = snapshot.metadata.fromCache ? "local cache" : "server";
+          console.log("Felhasználói lista innen érkezett: " + source);
+          
+          const users = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          } as User));
+          
+          observer.next(users);
+        },
+        (error) => {
+          console.error('Hiba a felhasználók lekérdezése során:', error);
+          observer.error(error);
+        }
+      );
+
+      return () => unsubscribe();
+    });
   }
 
-  getById(id: string): Observable<User | null> {
-    const userRef = doc(this.firestore, this.collectionName, id);
-    return from(getDoc(userRef)).pipe(
-      switchMap(doc => {
-        if (!doc.exists()) {
-          return from(this.indexedDBService.getUser(id));
-        }
-        const data = doc.data();
-        const user = { id: doc.id, ...data } as User;
-        this.indexedDBService.saveUser(user);
-        return of(user);
-      })
-    );
+  createUserProfile(user: User) {
+    const userRef = doc(this.firestore, this.collectionName, user.id);
+    return from(setDoc(userRef, user));
   }
 
   update(user: User) {
     const userRef = doc(this.firestore, this.collectionName, user.id);
-    this.indexedDBService.saveUser(user);
+    // Frissítjük a cache-t
+    const currentCache = this.userCache.value;
+    currentCache.set(user.id, user);
+    this.userCache.next(currentCache);
     return from(setDoc(userRef, user));
   }
 
   delete(id: string) {
     const userRef = doc(this.firestore, this.collectionName, id);
-    this.indexedDBService.deleteUser(id);
+    // Töröljük a cache-ből
+    const currentCache = this.userCache.value;
+    currentCache.delete(id);
+    this.userCache.next(currentCache);
     return from(deleteDoc(userRef));
+  }
+
+  addWeightEntry(userId: string, weight: number) {
+    return this.getById(userId).pipe(
+      switchMap(user => {
+        if (!user) {
+          throw new Error('Felhasználó nem található');
+        }
+
+        const weightEntry: WeightEntry = {
+          date: new Date(),
+          weight: weight
+        };
+
+        if (!user.weightHistory) {
+          user.weightHistory = [];
+        }
+
+        user.weightHistory.push(weightEntry);
+        user.weight = weight;
+
+        return this.update(user);
+      })
+    );
   }
 }

@@ -12,6 +12,26 @@ import { AuthService } from './shared/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FirebaseError } from '@angular/fire/app';
 import { User } from 'firebase/auth';
+import { trigger, transition, style, animate, query, animateChild, group } from '@angular/animations';
+
+const routeAnimations = trigger('routeAnimations', [
+  transition('* <=> *', [
+    query(':enter, :leave', [
+      style({
+        position: 'absolute',
+        width: '100%',
+        opacity: 0
+      })
+    ], { optional: true }),
+    query(':enter', [
+      animate('0.3s ease-in', style({ opacity: 1 }))
+    ], { optional: true }),
+    query(':leave', [
+        animate('0.3s ease-out', style({ opacity: 0 }))
+      ], { optional: true }
+    )
+  ])
+]);
 
 @Component({
   selector: 'app-root',
@@ -31,7 +51,8 @@ import { User } from 'firebase/auth';
     MatDividerModule
   ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
+  animations: [routeAnimations]
 })
 export class AppComponent implements OnInit, OnDestroy {
   private router = inject(Router);

@@ -15,10 +15,24 @@ import { WorkoutService } from '../../shared/services/workout.service';
 import { Workout } from '../../shared/models/workout.model';
 import { AuthService } from '../../shared/services/auth.service';
 import { WorkoutCardComponent } from '../../shared/components/workout-card/workout-card.component';
-import { IndexedDBService } from '../../shared/services/indexeddb.service';
-import { User } from 'firebase/auth';
+import { User as FirebaseUser } from 'firebase/auth';
 import { Timestamp } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
+import { trigger, state, style, animate, transition } from '@angular/animations';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
+import { filter } from 'rxjs';
+
+const listAnimation = trigger('listAnimation', [
+  transition(':enter', [
+    style({ opacity: 0 }),
+    animate('0.4s ease-in', style({ opacity: 1 }))
+  ]),
+  transition(':leave', [
+    animate('0.4s ease-out', style({ opacity: 0 }))
+  ])
+]);
 
 @Component({
   selector: 'app-workout-list',
@@ -36,10 +50,12 @@ import { Router } from '@angular/router';
     MatExpansionModule,
     MatListModule,
     MatProgressSpinnerModule,
-    WorkoutCardComponent
+    WorkoutCardComponent,
+    MatDialogModule
   ],
   templateUrl: './workout-list.component.html',
-  styleUrls: ['./workout-list.component.scss']
+  styleUrls: ['./workout-list.component.scss'],
+  animations: [listAnimation]
 })
 export class WorkoutListComponent implements OnInit, OnDestroy {
   workouts: Workout[] = [];
@@ -48,16 +64,19 @@ export class WorkoutListComponent implements OnInit, OnDestroy {
   isLoading = false;
   currentDate = new Date();
   isOnline = navigator.onLine;
-  useOnlineFilter = false;
   private onlineCallback: () => void;
   private offlineCallback: () => void;
+  loggedInUser$?: FirebaseUser | null;
+  pageSize = 10;
+  lastDoc: QueryDocumentSnapshot<DocumentData> | null = null;
+  hasMore = true;
 
   constructor(
     private snackBar: MatSnackBar, 
     private workoutService: WorkoutService,
     private authService: AuthService,
-    private indexedDBService: IndexedDBService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {
     this.onlineCallback = () => {
       this.isOnline = true;
@@ -79,7 +98,11 @@ export class WorkoutListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.loadData();
+    this.workouts = [];
+    this.filteredWorkouts = [];
+    this.lastDoc = null;
+    this.hasMore = true;
+    this.loadPaginated();
   }
 
   ngOnDestroy() {
@@ -87,43 +110,72 @@ export class WorkoutListComponent implements OnInit, OnDestroy {
     window.removeEventListener('offline', this.offlineCallback);
   }
 
-  loadData() {
+  loadPaginated() {
     this.isLoading = true;
-    this.authService.isUserLoggedIn().subscribe(user => {
+    this.authService.isUserLoggedIn().pipe(
+      filter((user): user is FirebaseUser | null => user !== undefined)
+    ).subscribe(user => {
+      this.loggedInUser$ = user;
       if (user) {
-        if (this.isOnline) {
-          this.workoutService.getByUserId(user.uid).subscribe({
-            next: (workouts) => {
-              this.processWorkouts(workouts);
-              this.isLoading = false;
-            },
-            error: (error) => {
-              console.error('Hiba az edzések betöltésekor:', error);
-              this.loadFromIndexedDB(user.uid);
-            }
+        this.workoutService.getWorkoutsPaginated(user.uid, this.pageSize, this.lastDoc || undefined).then(snapshot => {
+          const newWorkouts = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            date: this.parseDate(doc.data()['date'])
+          } as Workout));
+          if (this.lastDoc) {
+            this.workouts = [...this.workouts, ...newWorkouts];
+          } else {
+            this.workouts = newWorkouts;
+          }
+          this.filteredWorkouts = [...this.workouts];
+          this.lastDoc = snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1] : this.lastDoc;
+          this.hasMore = snapshot.docs.length === this.pageSize;
+          this.isLoading = false;
+        }).catch(error => {
+          console.error('Hiba az edzések betöltésekor:', error);
+          this.snackBar.open('Hiba történt az edzések betöltésekor', 'Bezárás', {
+            duration: 3000
           });
-        } else {
-          this.loadFromIndexedDB(user.uid);
-        }
+          this.isLoading = false;
+        });
       } else {
         this.isLoading = false;
+        this.workouts = [];
+        this.filteredWorkouts = [];
+        this.hasMore = false;
       }
     });
   }
 
-  private loadFromIndexedDB(userId: string) {
-    this.indexedDBService.getWorkouts()
-      .then(workouts => {
-        this.processWorkouts(workouts.filter(w => w.uid === userId));
-        this.isLoading = false;
-      })
-      .catch(error => {
-        console.error('Hiba az IndexedDB-ből való betöltéskor:', error);
-        this.snackBar.open('Hiba történt az edzések betöltésekor', 'Bezárás', {
-          duration: 3000
+  loadMore() {
+    this.loadPaginated();
+  }
+
+  loadData() {
+    this.isLoading = true;
+    this.authService.isUserLoggedIn().subscribe(user => {
+      this.loggedInUser$ = user;
+      if (user) {
+        this.workoutService.getByUserId(user.uid).subscribe({
+          next: (workouts) => {
+            this.processWorkouts(workouts);
+            this.isLoading = false;
+          },
+          error: (error) => {
+            console.error('Hiba az edzések betöltésekor:', error);
+            this.snackBar.open('Hiba történt az edzések betöltésekor', 'Bezárás', {
+              duration: 3000
+            });
+            this.isLoading = false;
+          }
         });
+      } else {
         this.isLoading = false;
-      });
+        this.workouts = [];
+        this.filteredWorkouts = [];
+      }
+    });
   }
 
   private processWorkouts(workouts: Workout[]) {
@@ -189,23 +241,39 @@ export class WorkoutListComponent implements OnInit, OnDestroy {
   }
 
   onDeleteWorkout(id: string) {
-    if (this.isOnline) {
-      this.workoutService.delete(id).subscribe({
-        next: () => {
-          this.indexedDBService.deleteWorkout(id);
-          this.snackBar.open('Edzés sikeresen törölve!', 'Bezárás', { duration: 3000 });
-          this.loadData();
-        },
-        error: (error) => {
-          console.error('Hiba az edzés törlésekor:', error);
-          this.snackBar.open('Hiba az edzés törlésekor', 'Bezárás', { duration: 3000 });
-        }
+    if (!this.isOnline) {
+      this.snackBar.open('Offline állapotban nem lehet törölni az edzést', 'Bezárás', {
+        duration: 3000
       });
-    } else {
-      this.indexedDBService.deleteWorkout(id);
-      this.snackBar.open('Edzés sikeresen törölve!', 'Bezárás', { duration: 3000 });
-      this.loadData();
+      return;
     }
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '300px',
+      data: {
+        title: 'Edzés törlése',
+        message: 'Biztosan törölni szeretnéd ezt az edzést?'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && this.loggedInUser$) {
+        this.workoutService.delete(id, this.loggedInUser$?.uid).subscribe({
+          next: () => {
+            this.snackBar.open('Edzés sikeresen törölve', 'Bezárás', {
+              duration: 3000
+            });
+            this.loadData();
+          },
+          error: (error) => {
+            console.error('Hiba a törlés során:', error);
+            this.snackBar.open('Hiba történt a törlés során', 'Bezárás', {
+              duration: 3000
+            });
+          }
+        });
+      }
+    });
   }
 
   getTypeLabel(type: string): string {

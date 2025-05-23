@@ -121,3 +121,21 @@
     }
   }
   
+  .load-more-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 32px 0 16px 0;
+  }
+  
+  .load-more-container button {
+    font-size: 1.2rem;
+    padding: 16px 40px;
+    min-width: 220px;
+    min-height: 56px;
+    border-radius: 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  

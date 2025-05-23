@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, Signal, signal, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -10,12 +10,14 @@ import { registerables } from 'chart.js';
 import { Chart } from 'chart.js/auto';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { DatepipePipe } from '../../shared/pipes/datepipe.pipe';
 import { AuthService } from '../../shared/services/auth.service';
 import { WorkoutService } from '../../shared/services/workout.service';
+import { UserService } from '../../shared/services/user.service';
 import { Workout } from '../../shared/models/workout.model';
-import { User } from 'firebase/auth';
+import { User as FirebaseUser } from 'firebase/auth';
+import { User } from '../../shared/models/user.model';
 import { Timestamp } from '@angular/fire/firestore';
+import { Observable, filter } from 'rxjs';
 
 Chart.register(...registerables);
 
@@ -36,7 +38,8 @@ Chart.register(...registerables);
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
-  loggedInUser?: User | null;
+  loggedInUser$: Observable<FirebaseUser | null> | undefined;
+  loggedInUser?: FirebaseUser | null;
   currentDate: string = new Date().toLocaleDateString('hu-HU', {
     year: 'numeric',
     month: 'long',
@@ -44,11 +47,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     weekday: 'long'
   });
   totalWorkouts: number = 0;
-  totalWorkoutTime: number = 0;
+  weeklyTotalWeight: number = 0;
   workoutStreak: number = 0;
-  recentWorkouts: Workout[] = [];
+  recentWorkouts: WritableSignal<Workout[]> = signal([]);
   upcomingWorkouts: Workout[] = [];
   isLoading = false;
+
+  public currentUser: User | null = null;
 
   barChartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,
@@ -92,7 +97,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   constructor(
     private auth: AuthService,
-    private workoutService: WorkoutService
+    private workoutService: WorkoutService,
+    private userService: UserService
   ) {}
 
   ngOnInit() {
@@ -105,16 +111,42 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   loadData() {
     this.isLoading = true;
-    this.auth.isUserLoggedIn().subscribe(user => {
+    this.loggedInUser$ = this.auth.isUserLoggedIn().pipe(
+      filter((user): user is FirebaseUser | null => user !== undefined)
+    );
+
+    this.loggedInUser$.subscribe(user => {
+      this.loggedInUser = user;
       if (user) {
-        this.loggedInUser = user;
-        this.workoutService.getByUserId(user.uid).subscribe({
-          next: (workouts) => {
-            this.processWorkouts(workouts);
+        this.userService.getById(user.uid).subscribe({
+          next: (userData: User | null) => {
+            this.currentUser = userData;
             this.isLoading = false;
           },
-          error: (error) => {
-            console.error('Hiba az adatok betöltésekor:', error);
+          error: (error: any) => {
+            console.error('Hiba a felhasználói adatok betöltésekor:', error);
+            this.isLoading = false;
+          }
+        });
+      } else {
+        console.log('Nincs bejelentkezett felhasználó');
+        this.isLoading = false;
+        this.recentWorkouts.set([]);
+        this.barChartData.datasets[0].data = [0, 0, 0, 0, 0, 0, 0];
+        this.updateChart();
+        this.currentUser = null;
+      }
+    });
+
+    this.auth.isUserLoggedIn().subscribe(user => {
+      if (user) {
+        this.workoutService.getByUserId(user.uid).subscribe({
+          next: (workouts: Workout[]) => {
+            console.log('Edzések betöltve:', workouts.length);
+            this.processWorkouts(workouts);
+          },
+          error: (error: any) => {
+            console.error('Hiba az edzések betöltésekor:', error);
             this.isLoading = false;
           }
         });
@@ -123,11 +155,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   processWorkouts(workouts: Workout[]) {
-    // Összes edzés számának kiszámítása
     this.totalWorkouts = workouts.length;
 
-    // Legutóbbi edzések (utolsó 5)
-    this.recentWorkouts = workouts
+    const sortedAndSlicedWorkouts = workouts
       .map(workout => ({
         ...workout,
         date: this.parseDate(workout.date)
@@ -135,15 +165,14 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, 5);
 
-    // Heti statisztika kiszámítása
+    this.recentWorkouts.set(sortedAndSlicedWorkouts);
+
     const weeklyStats = this.calculateWeeklyStats(workouts);
     this.barChartData.datasets[0].data = weeklyStats;
 
-    // Edzés streak kiszámítása
     this.workoutStreak = this.calculateWorkoutStreak(workouts);
 
-    // Összesített edzésidő kiszámítása
-    this.totalWorkoutTime = this.calculateTotalWorkoutTime(workouts);
+    this.weeklyTotalWeight = this.calculateWeeklyTotalWeight(workouts);
 
     this.updateChart();
   }
@@ -168,22 +197,21 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       return date.toDate();
     }
     console.warn('Érvénytelen dátum formátum:', date);
-    return new Date(); // Fallback az aktuális dátumra
+    return new Date();
   }
 
   calculateWeeklyStats(workouts: Workout[]): number[] {
-    const today = new Date();
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - today.getDay() + 1); // Hétfő
-
     const weeklyStats = new Array(7).fill(0);
+    const mondayOfThisWeek = this.getMondayOfCurrentWeek();
 
     workouts.forEach(workout => {
       const workoutDate = this.parseDate(workout.date);
-      if (workoutDate >= weekStart && workoutDate <= today) {
-        const dayIndex = workoutDate.getDay() - 1;
-        if (dayIndex >= 0 && dayIndex < 7) {
-          weeklyStats[dayIndex]++;
+      if (workoutDate >= mondayOfThisWeek && workoutDate <= new Date()) {
+        const dayIndex = workoutDate.getDay();
+        const chartDayIndex = dayIndex === 0 ? 6 : dayIndex - 1; 
+
+        if (chartDayIndex >= 0 && chartDayIndex < 7) {
+          weeklyStats[chartDayIndex]++;
         }
       }
     });
@@ -222,12 +250,17 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     return streak;
   }
 
-  calculateTotalWorkoutTime(workouts: Workout[]): number {
-    return workouts.reduce((total, workout) => {
-      return total + (workout.exercises.reduce((workoutTotal, exercise) => {
-        return workoutTotal + (exercise.sets * exercise.reps);
-      }, 0));
-    }, 0);
+  calculateWeeklyTotalWeight(workouts: Workout[]): number {
+    const mondayOfThisWeek = this.getMondayOfCurrentWeek();
+    const today = new Date();
+    return workouts
+      .filter(workout => {
+        const workoutDate = this.parseDate(workout.date);
+        return workoutDate >= mondayOfThisWeek && workoutDate <= today;
+      })
+      .reduce((total, workout) => {
+        return total + (workout.exercises.reduce((sum, ex) => sum + (ex.weight || 0) * ex.sets * ex.reps, 0));
+      }, 0);
   }
 
   updateChart() {
@@ -252,30 +285,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     }
   }
 
-  tesztWorkoutHozzaadasa() {
-    if (!this.loggedInUser) {
-      alert('Nincs bejelentkezett felhasználó!');
-      return;
-    }
-    const tesztWorkout: Workout = {
-      id: '',
-      name: 'Teszt edzés',
-      date: new Date(),
-      notes: 'Automatikusan hozzáadva',
-      uid: this.loggedInUser.uid,
-      totalWeight: 3*10*80 + 3*12*20 + 4*15*0,
-      exercises: [
-        { id: '1', name: 'Fekvenyomás', sets: 3, reps: 10, weight: 80, type: 'chest' },
-        { id: '2', name: 'Bicepsz hajlítás', sets: 3, reps: 12, weight: 20, type: 'biceps' },
-        { id: '3', name: 'Hasprés', sets: 4, reps: 15, weight: 0, type: 'abs' }
-      ]
-    };
-    this.workoutService.create(tesztWorkout).subscribe({
-      next: () => {
-        alert('Teszt edzés hozzáadva!');
-        this.loadData();
-      },
-      error: (err) => alert('Hiba: ' + err)
-    });
+  private getMondayOfCurrentWeek(): Date {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - diff);
+    monday.setHours(0, 0, 0, 0);
+    return monday;
   }
 }

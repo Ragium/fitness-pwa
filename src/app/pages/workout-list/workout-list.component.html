@@ -22,12 +22,9 @@
           <mat-option value="abs">Hasizom</mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-slide-toggle [(ngModel)]="useOnlineFilter" (change)="loadWorkouts()">
-        Online szűrés (backend)
-      </mat-slide-toggle>
     </div>
   
-    <div class="workout-grid">
+    <div class="workout-grid" [@listAnimation]>
       <app-workout-card
         *ngFor="let workout of filteredWorkouts"
         [workout]="workout"
@@ -36,7 +33,7 @@
       </app-workout-card>
     </div>
   
-    <div *ngIf="filteredWorkouts.length === 0" class="no-workouts">
+    <div *ngIf="filteredWorkouts.length === 0 && !isLoading" class="no-workouts" [@listAnimation]>
       <mat-icon>fitness_center</mat-icon>
       <p>Nincsenek edzések a kiválasztott szűrővel.</p>
       <button mat-raised-button color="primary" routerLink="/new-workout">

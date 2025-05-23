@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -14,6 +14,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { User } from '../../shared/models/user.model';
 import { UserService } from '../../shared/services/user.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { Observable, switchMap, of, Subscription, filter } from 'rxjs';
+import { User as FirebaseUser } from 'firebase/auth';
 
 
 interface WorkoutStats {
@@ -39,12 +41,12 @@ interface WorkoutStats {
     MatDatepickerModule,
     MatNativeDateModule,
     MatSelectModule,
-    MatDividerModule
+    MatDividerModule,
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
   profileForm: FormGroup;
   passwordForm: FormGroup;
   isLoading = false;
@@ -56,7 +58,9 @@ export class ProfileComponent implements OnInit {
     workoutDays: 0
   };
   
+  user$: Observable<User | null> | undefined;
   user: User | null = null;
+  private userSubscription: Subscription | undefined;
 
   constructor(
     private fb: FormBuilder,
@@ -87,23 +91,36 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.authService.isUserLoggedIn().subscribe(user => {
-      if (user) {
-        this.userService.getById(user.uid).subscribe(userData => {
-          this.user = userData;
-          if (userData) {
-            this.profileForm.patchValue({
-              username: userData.username,
-              email: userData.email,
-              fullName: `${userData.name?.firstname} ${userData.name?.lastname}`,
-              age: userData.age,
-              height: userData.height,
-              weight: userData.weight
-            });
-          }
+    this.user$ = this.authService.isUserLoggedIn().pipe(
+      filter((user): user is FirebaseUser | null => user !== undefined),
+      switchMap(firebaseUser => {
+        if (firebaseUser) {
+          return this.userService.getById(firebaseUser.uid);
+        } else {
+          return of(null);
+        }
+      })
+    );
+
+    this.userSubscription = this.user$.subscribe(userData => {
+      this.user = userData;
+      if (userData) {
+        this.profileForm.patchValue({
+          username: userData.username,
+          email: userData.email,
+          fullName: `${userData.name?.firstname} ${userData.name?.lastname}`,
+          age: userData.age,
+          height: userData.height,
+          weight: userData.weight
         });
+      } else {
+        this.profileForm.reset();
       }
     });
+  }
+
+  ngOnDestroy() {
+    this.userSubscription?.unsubscribe();
   }
 
   loadMockData() {
@@ -119,72 +136,110 @@ export class ProfileComponent implements OnInit {
   onSubmit() {
     if (this.profileForm.valid && this.user) {
       this.isLoading = true;
-      const formData = this.profileForm.value;
-      const [firstname, lastname] = formData.fullName.split(' ');
-      
-      const updatedUser: User = {
-        ...this.user,
-        username: formData.username,
-        email: formData.email,
-        name: {
-          firstname: firstname || '',
-          lastname: lastname || ''
-        },
-        age: formData.age,
-        height: formData.height,
-        weight: formData.weight
-      };
 
-      this.userService.update(updatedUser).subscribe({
+      const updatedUser: User = { ...this.user as User };
+
+      const formData = this.profileForm.value;
+
+      let weightChanged = false;
+      if (formData.weight !== undefined && formData.weight !== null && formData.weight !== this.user?.weight) {
+        weightChanged = true;
+      }
+
+      if (formData.username !== undefined && formData.username !== null) {
+        updatedUser.username = formData.username;
+      }
+      if (formData.email !== undefined && formData.email !== null) {
+        updatedUser.email = formData.email;
+      }
+      
+      if (formData.fullName !== undefined && formData.fullName !== null) {
+        const [firstName, lastName] = formData.fullName.split(' ');
+        updatedUser.name = {
+          firstname: firstName || '',
+          lastname: lastName || ''
+        };
+      } else if (updatedUser.name === undefined || updatedUser.name === null) {
+        updatedUser.name = { firstname: '', lastname: ''};
+      }
+
+      if (formData.age !== undefined && formData.age !== null) {
+        updatedUser.age = formData.age;
+      }
+      if (formData.height !== undefined && formData.height !== null) {
+        updatedUser.height = formData.height;
+      }
+      
+      console.log('Offline profil mentése, hívás a UserService.update-re...');
+
+      let saveObservable: Observable<any>;
+
+      if (weightChanged) {
+        saveObservable = this.userService.addWeightEntry(updatedUser.id, formData.weight);
+      } else {
+        saveObservable = this.userService.update(updatedUser);
+      }
+
+      saveObservable.subscribe({
         next: () => {
-          this.snackBar.open('Profil sikeresen frissítve', 'Bezárás', {
+          console.log('Felhasználói profil sikeresen frissítve');
+          const message = navigator.onLine 
+            ? 'Profil sikeresen frissítve' 
+            : 'Profil offline mentve, szinkronizálás online állapotban';
+          this.snackBar.open(message, 'Bezárás', {
             duration: 3000
           });
           this.isLoading = false;
-          
-          // Frissítjük a felhasználói adatokat
-          this.authService.isUserLoggedIn().subscribe(user => {
-            if (user) {
-              this.userService.getById(user.uid).subscribe(userData => {
-                this.user = userData;
-                if (userData) {
-                  this.profileForm.patchValue({
-                    username: userData.username,
-                    email: userData.email,
-                    fullName: `${userData.name?.firstname} ${userData.name?.lastname}`,
-                    age: userData.age,
-                    height: userData.height,
-                    weight: userData.weight
-                  });
-                }
-              });
-            }
-          });
         },
         error: (error) => {
-          console.error('Hiba történt:', error);
-          this.snackBar.open('Hiba történt a profil frissítése során', 'Bezárás', {
+          console.error('Hiba történt a mentés során:', error);
+          this.snackBar.open('Hiba történt a profil mentése során', 'Bezárás', {
             duration: 3000
           });
           this.isLoading = false;
         }
       });
+
+      // OPTIMISTA offline kezelés: ha offline vagyunk, azonnal visszajelzünk és leállítjuk a spinnert
+      if (!navigator.onLine) {
+        this.isLoading = false;
+        this.snackBar.open('Profil offline mentve! Szinkronizálás online állapotban.', 'Bezárás', {
+          duration: 3000
+        });
+      }
     }
   }
 
   onPasswordChange() {
     if (this.passwordForm.valid) {
       this.isPasswordChanging = true;
-      // TODO: Implement password change logic
-      console.log(this.passwordForm.value);
-      
-      setTimeout(() => {
+      const newPassword = this.passwordForm.get('newPassword')?.value;
+      this.authService.updateUserPassword(newPassword).subscribe({
+        next: () => {
+          this.isPasswordChanging = false;
+          this.passwordForm.reset();
+          const message = navigator.onLine
+            ? 'Jelszó sikeresen módosítva'
+            : 'Jelszó offline módosítva! Szinkronizálás online állapotban.';
+          this.snackBar.open(message, 'Bezárás', {
+            duration: 3000
+          });
+        },
+        error: (error) => {
+          this.isPasswordChanging = false;
+          this.snackBar.open('Hiba történt a jelszó módosítása során!', 'Bezárás', {
+            duration: 3000
+          });
+        }
+      });
+      // OPTIMISTA offline kezelés: ha offline vagyunk, azonnal visszajelzünk
+      if (!navigator.onLine) {
         this.isPasswordChanging = false;
         this.passwordForm.reset();
-        this.snackBar.open('Jelszó sikeresen módosítva', 'Bezárás', {
+        this.snackBar.open('Jelszó offline módosítva! Szinkronizálás online állapotban.', 'Bezárás', {
           duration: 3000
         });
-      }, 1000);
+      }
     }
   }
 }

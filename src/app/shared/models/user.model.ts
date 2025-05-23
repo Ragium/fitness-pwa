@@ -1,4 +1,4 @@
-export interface User{
+export interface User {
     id: string;
     email: string;
     name: {
@@ -8,5 +8,11 @@ export interface User{
     username: string;  
     age: number;
     height: number;
+    weight: number;
+    weightHistory?: WeightEntry[];
+}
+
+export interface WeightEntry {
+    date: Date;
     weight: number;
 }

@@ -1,14 +1,10 @@
 <div class="dashboard-container">
     <div class="welcome-section">
-      <h1>Üdvözlünk, {{ loggedInUser?.displayName || 'Felhasználó' }}!</h1>
+      <h1>Üdvözlünk, {{ currentUser?.username || currentUser?.name?.firstname || 'Felhasználó' }}!</h1>
       <p class="date">{{ currentDate }}</p>
       <button mat-raised-button color="primary" routerLink="/new-workout" class="new-workout-btn">
         <mat-icon>add</mat-icon>
         Új edzés rögzítése
-      </button>
-      <button mat-raised-button color="accent" (click)="tesztWorkoutHozzaadasa()">
-        <mat-icon>add</mat-icon>
-        Teszt edzés hozzáadása
       </button>
     </div>
   
@@ -30,8 +26,8 @@
               <div class="stat-item">
                 <mat-icon>timer</mat-icon>
                 <div class="stat-info">
-                  <div class="stat-value">{{ totalWorkoutTime }} perc</div>
-                  <div class="stat-label">Összes edzésidő</div>
+                  <div class="stat-value">{{ weeklyTotalWeight }} kg</div>
+                  <div class="stat-label">Heti megmozgatott összsúly</div>
                 </div>
               </div>
               <div class="stat-item">
@@ -63,14 +59,14 @@
           </mat-card-header>
           <mat-card-content>
             <mat-list>
-              <mat-list-item *ngFor="let workout of recentWorkouts">
+              <mat-list-item *ngFor="let workout of recentWorkouts()">
                 <mat-icon matListItemIcon [class]="'type-icon ' + workout.exercises[0].type">
                   {{ getTypeIcon(workout.exercises[0].type) }}
                 </mat-icon>
                 <div matListItemTitle>{{ workout.name }}</div>
                 <div matListItemLine>{{ workout.date | date:'yyyy.MM.dd HH:mm' }}</div>
               </mat-list-item>
-              <div *ngIf="recentWorkouts.length === 0" class="no-data">
+              <div *ngIf="recentWorkouts().length === 0" class="no-data">
                 <p>Még nincsenek edzések</p>
               </div>
             </mat-list>

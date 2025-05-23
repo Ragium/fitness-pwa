@@ -1,34 +1,54 @@
+@mixin flex(){
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+@mixin card-header(){
+    margin-bottom: 16px;
+    color: var(--mat-sys-primary);
+}
+
+@mixin card-content(){
+    flex: 1;
+}
+
+@mixin card-actions(){
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 16px;
+}
+
+@mixin notes(){
+    margin-top: 16px;
+    font-style: italic;
+    color: #666;
+}
+@mixin chip-listbox(){
+    display: inline-block;
+    margin-left: 8px;
+}
+
 .workout-card {
-  @include responsive-card;
-  @include fade-in;
+    @include flex();
+  }
 
   mat-card-header {
-    @include card-header;
+    @include card-header();
   }
 
   mat-card-content {
-    @include responsive-font(14px, 16px);
+    @include card-content();
   }
 
   mat-card-actions {
-    @include flex-center;
-    gap: 8px;
-    padding: 16px;
-
-    button {
-      @include primary-button;
-    }
+    @include card-actions();
   }
 
   .notes {
-    @include responsive-font(12px, 14px);
-    color: #666;
-    font-style: italic;
-    margin-top: 16px;
+   @include notes();
   }
 
   mat-chip-listbox {
-    display: inline-block;
-    margin-left: 8px;
+    @include chip-listbox();
   }
-} 

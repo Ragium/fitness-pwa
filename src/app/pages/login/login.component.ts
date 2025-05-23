@@ -44,6 +44,7 @@ export class LoginComponent {
   loginForm: FormGroup;
   email = new FormControl('');
   password = new FormControl('');
+  rememberMe = new FormControl(false);
   isLoading = false;
 
   loadingObservation?: Observable<boolean>;
@@ -58,19 +59,19 @@ export class LoginComponent {
     private userService: UserService
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false],
+      email: this.email,
+      password: this.password,
+      rememberMe: this.rememberMe
     });
   }
 
   async onSubmit() {
     if(this.loginForm.invalid) return;
 
-    const {email, password} =this.loginForm.value;
+    const {email, password, rememberMe} = this.loginForm.value;
     this.isLoading = true;
 
-    this.authService.login(email, password).subscribe({
+    this.authService.login(email, password, rememberMe).subscribe({
       next: () => {
         this.snackBar.open('Sikeres bejelentkezés', 'Bezárás', {duration: 3000});
         this.router.navigate(['/dashboard']);
@@ -80,6 +81,33 @@ export class LoginComponent {
         this.snackBar.open('Hiba a bejelentkezés során: ' + error.message, 'Bezárás', {duration: 3000});
       },
       complete: () => {
+        this.isLoading = false;
+      }
+    });
+  }
+
+  async onForgotPassword() {
+    if (this.email.invalid) {
+      this.email.markAsTouched();
+      this.snackBar.open('Kérjük, adja meg az email címet a jelszó visszaállításhoz!', 'Bezárás', { duration: 3000 });
+      return;
+    }
+
+    this.isLoading = true;
+    const email = this.email.value as string;
+
+    this.authService.sendPasswordResetEmail(email).subscribe({
+      next: () => {
+        this.snackBar.open('Jelszó visszaállító email elküldve. Kérjük, ellenőrizze postaládáját.', 'Bezárás', { duration: 5000 });
+        this.isLoading = false;
+      },
+      error: (error: FirebaseError) => {
+        console.error(error);
+        let errorMessage = 'Hiba történt a jelszó visszaállítás során.';
+        if (error.code === 'auth/user-not-found') {
+          errorMessage = 'Nincs felhasználó ezzel az email címmel.';
+        }
+        this.snackBar.open(errorMessage, 'Bezárás', { duration: 5000 });
         this.isLoading = false;
       }
     });
