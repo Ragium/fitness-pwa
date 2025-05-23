@@ -18,9 +18,30 @@
   .filters {
     margin-bottom: 24px;
     
-    mat-form-field {
-      width: 100%;
-      max-width: 300px;
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: flex-start;
+  
+      mat-form-field {
+        width: 200px;
+      }
+    }
+  
+    .date-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: flex-start;
+  
+      mat-form-field {
+        width: 200px;
+      }
+  
+      button {
+        margin-top: 8px;
+      }
     }
   }
   
@@ -119,6 +140,12 @@
       margin-top: 16px;
       color: #666;
     }
+  }
+  
+  .date {
+    text-align: center;
+    color: #666;
+    margin-top: 20px;
   }
   
   .load-more-container {

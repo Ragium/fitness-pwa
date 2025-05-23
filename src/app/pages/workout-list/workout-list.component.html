@@ -8,20 +8,43 @@
     </div>
   
     <div class="filters">
-      <mat-form-field>
-        <mat-label>Szűrés típus szerint</mat-label>
-        <mat-select [(ngModel)]="selectedType" (selectionChange)="onTypeChange()">
-          <mat-option value="all">Összes</mat-option>
-          <mat-option value="cardio">Kardió</mat-option>
-          <mat-option value="biceps">Bicepsz</mat-option>
-          <mat-option value="triceps">Tricepsz</mat-option>
-          <mat-option value="chest">Mellizom</mat-option>
-          <mat-option value="back">Hátizom</mat-option>
-          <mat-option value="shoulders">Vállizom</mat-option>
-          <mat-option value="legs">Lábizom</mat-option>
-          <mat-option value="abs">Hasizom</mat-option>
-        </mat-select>
-      </mat-form-field>
+      <div class="filter-row">
+        <mat-form-field>
+          <mat-label>Szűrés típus szerint</mat-label>
+          <mat-select [(ngModel)]="selectedType" (selectionChange)="onTypeChange()">
+            <mat-option value="all">Összes</mat-option>
+            <mat-option value="cardio">Kardió</mat-option>
+            <mat-option value="biceps">Bicepsz</mat-option>
+            <mat-option value="triceps">Tricepsz</mat-option>
+            <mat-option value="chest">Mellizom</mat-option>
+            <mat-option value="back">Hátizom</mat-option>
+            <mat-option value="shoulders">Vállizom</mat-option>
+            <mat-option value="legs">Lábizom</mat-option>
+            <mat-option value="abs">Hasizom</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="date-filters">
+          <mat-form-field>
+            <mat-label>Kezdő dátum</mat-label>
+            <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" (dateChange)="onDateChange()">
+            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+            <mat-datepicker #startPicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-label>Záró dátum</mat-label>
+            <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" (dateChange)="onDateChange()">
+            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+            <mat-datepicker #endPicker></mat-datepicker>
+          </mat-form-field>
+
+          <button mat-button color="warn" (click)="clearDateFilters()" *ngIf="startDate || endDate">
+            <mat-icon>clear</mat-icon>
+            Szűrők törlése
+          </button>
+        </div>
+      </div>
     </div>
   
     <div class="workout-grid" [@listAnimation]>

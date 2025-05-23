@@ -11,6 +11,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { WorkoutService } from '../../shared/services/workout.service';
 import { Workout } from '../../shared/models/workout.model';
 import { AuthService } from '../../shared/services/auth.service';
@@ -51,7 +53,9 @@ const listAnimation = trigger('listAnimation', [
     MatListModule,
     MatProgressSpinnerModule,
     WorkoutCardComponent,
-    MatDialogModule
+    MatDialogModule,
+    MatDatepickerModule,
+    MatNativeDateModule
   ],
   templateUrl: './workout-list.component.html',
   styleUrls: ['./workout-list.component.scss'],
@@ -61,6 +65,8 @@ export class WorkoutListComponent implements OnInit, OnDestroy {
   workouts: Workout[] = [];
   filteredWorkouts: Workout[] = [];
   selectedType: string = 'all';
+  startDate: Date | null = null;
+  endDate: Date | null = null;
   isLoading = false;
   currentDate = new Date();
   isOnline = navigator.onLine;
@@ -212,31 +218,42 @@ export class WorkoutListComponent implements OnInit, OnDestroy {
   }
 
   filterWorkouts() {
-    if (this.selectedType === 'all') {
-      this.filteredWorkouts = [...this.workouts];
-    } else {
-      this.filteredWorkouts = this.workouts.filter(workout => {
-        return workout.exercises.some(exercise => {
-          if (exercise.type) {
-            console.log('Checking exercise:', {
-              name: exercise.name,
-              type: exercise.type,
-              selected: this.selectedType,
-              matches: exercise.type === this.selectedType
-            });
-            return exercise.type === this.selectedType;
-          }
-          return false;
-        });
-      });
+    let filtered = [...this.workouts];
+
+    // Típus szerinti szűrés
+    if (this.selectedType !== 'all') {
+      filtered = filtered.filter(workout =>
+        workout.exercises.some(exercise => exercise.type === this.selectedType)
+      );
     }
-    console.log('Filtered workouts:', this.filteredWorkouts.map(w => ({
-      name: w.name,
-      exercises: w.exercises.map(e => ({ name: e.name, type: e.type }))
-    })));
+
+    // Dátum szerinti szűrés
+    if (this.startDate) {
+      filtered = filtered.filter(workout => 
+        workout.date >= this.startDate!
+      );
+    }
+
+    if (this.endDate) {
+      filtered = filtered.filter(workout => 
+        workout.date <= this.endDate!
+      );
+    }
+
+    this.filteredWorkouts = filtered;
   }
 
   onTypeChange() {
+    this.filterWorkouts();
+  }
+
+  onDateChange() {
+    this.filterWorkouts();
+  }
+
+  clearDateFilters() {
+    this.startDate = null;
+    this.endDate = null;
     this.filterWorkouts();
   }
 
