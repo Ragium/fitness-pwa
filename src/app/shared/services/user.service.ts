@@ -15,32 +15,19 @@ export class UserService {
 
   getById(id: string): Observable<User | null> {
     const userRef = doc(this.firestore, this.collectionName, id);
-    return new Observable<User | null>(observer => {
-      const unsubscribe = onSnapshot(userRef, 
-        { includeMetadataChanges: true },
-        (doc) => {
-          const source = doc.metadata.fromCache ? "local cache" : "server";
-          console.log("Profil adatok innen érkeztek: " + source);
-          
-          if (doc.exists()) {
-            const user = { id: doc.id, ...doc.data() } as User;
-            // Frissítjük a cache-t
-            const currentCache = this.userCache.value;
-            currentCache.set(id, user);
-            this.userCache.next(currentCache);
-            observer.next(user);
-          } else {
-            observer.next(null);
-          }
-        },
-        (error) => {
-          console.error('Hiba a felhasználó lekérdezése során:', error);
-          observer.error(error);
+    return from(getDoc(userRef)).pipe(
+      map(doc => {
+        if (doc.exists()) {
+          const user = { id: doc.id, ...doc.data() } as User;
+          // Frissítjük a cache-t
+          const currentCache = this.userCache.value;
+          currentCache.set(id, user);
+          this.userCache.next(currentCache);
+          return user;
         }
-      );
-
-      return () => unsubscribe();
-    });
+        return null;
+      })
+    );
   }
 
   getAll(): Observable<User[]> {

@@ -28,21 +28,6 @@
         width: 200px;
       }
     }
-  
-    .date-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      align-items: flex-start;
-  
-      mat-form-field {
-        width: 200px;
-      }
-  
-      button {
-        margin-top: 8px;
-      }
-    }
   }
   
   .workout-grid {
@@ -145,7 +130,7 @@
   .date {
     text-align: center;
     color: #666;
-    margin-top: 20px;
+    margin-top: 24px;
   }
   
   .load-more-container {

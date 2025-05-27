@@ -1,138 +1,146 @@
 <div class="profile-container">
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>{{ (user$ | async)?.username || 'Felhasználó' }}</mat-card-title>
-        <mat-card-subtitle>{{ (user$ | async)?.email }}</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>  
-        <mat-divider class="profile-divider"></mat-divider>
-  
-        <div class="profile-info">
-          <h3>Profil adatok</h3>
-          <p><strong>Név:</strong> {{ (user$ | async)?.name?.firstname }} {{ (user$ | async)?.name?.lastname }}</p>
-          <p><strong>Felhasználónév:</strong> {{ (user$ | async)?.username }}</p>
-          <p><strong>Email:</strong> {{ (user$ | async)?.email }}</p>
-          <p><strong>Kor:</strong> {{ (user$ | async)?.age }} év</p>
-          <p><strong>Magasság:</strong> {{ (user$ | async)?.height }} cm</p>
-          <p><strong>Súly:</strong> {{ (user$ | async)?.weight }} kg</p>
+  <mat-card class="profile-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon class="profile-avatar">account_circle</mat-icon>
+        {{ (user$ | async)?.username || 'Felhasználó' }}
+      </mat-card-title>
+      <mat-card-subtitle>{{ (user$ | async)?.email }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-divider class="profile-divider"></mat-divider>
+      <div class="profile-info">
+        <h3><mat-icon>person</mat-icon> Profil adatok</h3>
+        <div class="profile-info-grid">
+          <div class="profile-info-item">
+            <mat-icon>badge</mat-icon>
+            <span><strong>Név:</strong> {{ (user$ | async)?.name?.firstname }} {{ (user$ | async)?.name?.lastname }}</span>
+          </div>
+          <div class="profile-info-item">
+            <mat-icon>person</mat-icon>
+            <span><strong>Felhasználónév:</strong> {{ (user$ | async)?.username }}</span>
+          </div>
+          <div class="profile-info-item">
+            <mat-icon>email</mat-icon>
+            <span><strong>Email:</strong> {{ (user$ | async)?.email }}</span>
+          </div>
+          <div class="profile-info-item">
+            <mat-icon>cake</mat-icon>
+            <span><strong>Kor:</strong> {{ (user$ | async)?.age }} év</span>
+          </div>
+          <div class="profile-info-item">
+            <mat-icon>height</mat-icon>
+            <span><strong>Magasság:</strong> {{ (user$ | async)?.height }} cm</span>
+          </div>
+          <div class="profile-info-item">
+            <mat-icon>fitness_center</mat-icon>
+            <span><strong>Súly:</strong> {{ (user$ | async)?.weight }} kg</span>
+          </div>
         </div>
-  
-        <mat-divider class="profile-divider"></mat-divider>
-  
-        <div class="profile-form">
-          <h3>Profil adatok</h3>
-          <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-            <div class="form-row">
-              <mat-form-field>
-                <mat-label>Felhasználónév</mat-label>
-                <input matInput formControlName="username" [value]="(user$ | async)?.username" placeholder="Felhasználónév">
-                <mat-error *ngIf="profileForm.get('username')?.hasError('required')">
-                  A felhasználónév megadása kötelező
-                </mat-error>
-              </mat-form-field>
-            </div>
-  
-            <div class="form-row">
-              <mat-form-field>
-                <mat-label>Email</mat-label>
-                <input matInput formControlName="email" [value]="(user$ | async)?.email" placeholder="Email cím" type="email">
-                <mat-error *ngIf="profileForm.get('email')?.hasError('required')">
-                  Az email megadása kötelező
-                </mat-error>
-                <mat-error *ngIf="profileForm.get('email')?.hasError('email')">
-                  Kérjük, adjon meg érvényes email címet
-                </mat-error>
-              </mat-form-field>
-            </div>
-  
-            <div class="form-row">
-              <mat-form-field>
-                <mat-label>Teljes név</mat-label>
-                <input matInput formControlName="fullName" [value]="(user$ | async)?.name?.firstname + ' ' + (user$ | async)?.name?.lastname" placeholder="Teljes név">
-              </mat-form-field>
-            </div>
-  
-            <div class="form-row">
-              <mat-form-field>
-                <mat-label>Kor</mat-label>
-                <input matInput type="number" formControlName="age" [value]="(user$ | async)?.age" placeholder="Kor" min="0" max="100">
-              </mat-form-field>
-            </div>
-  
-            <div class="form-row">
-              <mat-form-field>
-                <mat-label>Magasság (cm)</mat-label>
-                <input matInput type="number" formControlName="height" [value]="(user$ | async)?.height" placeholder="Magasság" min="100" max="250">
-              </mat-form-field>
-            </div>
-  
-            <div class="form-row">
-              <mat-form-field>
-                <mat-label>Súly (kg)</mat-label>
-                <input matInput type="number" formControlName="weight" [value]="(user$ | async)?.weight" placeholder="Súly" min="30" max="300">
-              </mat-form-field>
-            </div>
-  
-            <div class="form-actions">
-              <button mat-raised-button color="primary" type="submit" [disabled]="!profileForm.valid || isLoading">
-                <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
-                <span *ngIf="!isLoading">Mentés</span>
-              </button>
-            </div>
-          </form>
-        </div>
-  
-        <mat-divider class="profile-divider"></mat-divider>
-  
-        <div class="password-change">
-          <h3>Jelszó módosítása</h3>
-          <form [formGroup]="passwordForm" (ngSubmit)="onPasswordChange()">
-            <div class="form-row">
-              <mat-form-field>
-                <mat-label>Jelenlegi jelszó</mat-label>
-                <input matInput formControlName="currentPassword" type="password">
-                <mat-error *ngIf="passwordForm.get('currentPassword')?.hasError('required')">
-                  A jelenlegi jelszó megadása kötelező
-                </mat-error>
-              </mat-form-field>
-            </div>
-  
-            <div class="form-row">
-              <mat-form-field>
-                <mat-label>Új jelszó</mat-label>
-                <input matInput formControlName="newPassword" type="password">
-                <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('required')">
-                  Az új jelszó megadása kötelező
-                </mat-error>
-                <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">
-                  A jelszónak legalább 6 karakter hosszúnak kell lennie
-                </mat-error>
-              </mat-form-field>
-            </div>
-  
-            <div class="form-row">
-              <mat-form-field>
-                <mat-label>Új jelszó megerősítése</mat-label>
-                <input matInput formControlName="confirmPassword" type="password">
-                <mat-error *ngIf="passwordForm.get('confirmPassword')?.hasError('required')">
-                  A jelszó megerősítése kötelező
-                </mat-error>
-                <mat-error *ngIf="passwordForm.hasError('passwordMismatch')">
-                  A jelszavak nem egyeznek
-                </mat-error>
-              </mat-form-field>
-            </div>
-  
-            <div class="form-actions">
-              <button mat-raised-button color="primary" type="submit" [disabled]="!passwordForm.valid || isPasswordChanging">
-                <mat-spinner diameter="20" *ngIf="isPasswordChanging"></mat-spinner>
-                <span *ngIf="!isPasswordChanging">Jelszó módosítása</span>
-              </button>
-            </div>
-          </form>
-        </div>
-
-      </mat-card-content>
-    </mat-card>
-  </div>
+      </div>
+      <mat-divider class="profile-divider"></mat-divider>
+      <div class="profile-form">
+        <h3><mat-icon>edit</mat-icon> Profil szerkesztése</h3>
+        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+          <div class="form-row">
+            <mat-form-field appearance="fill">
+              <mat-label>Felhasználónév</mat-label>
+              <input matInput formControlName="username" [value]="(user$ | async)?.username" placeholder="Felhasználónév">
+              <mat-error *ngIf="profileForm.get('username')?.hasError('required')">
+                A felhasználónév megadása kötelező
+              </mat-error>
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="fill">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" [value]="(user$ | async)?.email" placeholder="Email cím" type="email">
+              <mat-error *ngIf="profileForm.get('email')?.hasError('required')">
+                Az email megadása kötelező
+              </mat-error>
+              <mat-error *ngIf="profileForm.get('email')?.hasError('email')">
+                Kérjük, adjon meg érvényes email címet
+              </mat-error>
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="fill">
+              <mat-label>Teljes név</mat-label>
+              <input matInput formControlName="fullName" [value]="(user$ | async)?.name?.firstname + ' ' + (user$ | async)?.name?.lastname" placeholder="Teljes név">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="fill">
+              <mat-label>Kor</mat-label>
+              <input matInput type="number" formControlName="age" [value]="(user$ | async)?.age" placeholder="Kor" min="0" max="100">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="fill">
+              <mat-label>Magasság (cm)</mat-label>
+              <input matInput type="number" formControlName="height" [value]="(user$ | async)?.height" placeholder="Magasság" min="100" max="250">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="fill">
+              <mat-label>Súly (kg)</mat-label>
+              <input matInput type="number" formControlName="weight" [value]="(user$ | async)?.weight" placeholder="Súly" min="30" max="300">
+            </mat-form-field>
+          </div>
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="!profileForm.valid || isLoading">
+              <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+              <span *ngIf="!isLoading">Mentés</span>
+            </button>
+          </div>
+        </form>
+      </div>
+      <mat-divider class="profile-divider"></mat-divider>
+      <div class="password-change">
+        <h3><mat-icon>lock</mat-icon> Jelszó módosítása</h3>
+        <form [formGroup]="passwordForm" (ngSubmit)="onPasswordChange()">
+          <div class="form-row">
+            <mat-form-field appearance="fill">
+              <mat-label>Jelenlegi jelszó</mat-label>
+              <input matInput formControlName="currentPassword" type="password">
+              <mat-error *ngIf="passwordForm.get('currentPassword')?.hasError('required')">
+                A jelenlegi jelszó megadása kötelező
+              </mat-error>
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="fill">
+              <mat-label>Új jelszó</mat-label>
+              <input matInput formControlName="newPassword" type="password">
+              <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('required')">
+                Az új jelszó megadása kötelező
+              </mat-error>
+              <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">
+                A jelszónak legalább 6 karakter hosszúnak kell lennie
+              </mat-error>
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="fill">
+              <mat-label>Új jelszó megerősítése</mat-label>
+              <input matInput formControlName="confirmPassword" type="password">
+              <mat-error *ngIf="passwordForm.get('confirmPassword')?.hasError('required')">
+                A jelszó megerősítése kötelező
+              </mat-error>
+              <mat-error *ngIf="passwordForm.hasError('passwordMismatch')">
+                A jelszavak nem egyeznek
+              </mat-error>
+            </mat-form-field>
+          </div>
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="!passwordForm.valid || isPasswordChanging">
+              <mat-spinner diameter="20" *ngIf="isPasswordChanging"></mat-spinner>
+              <span *ngIf="!isPasswordChanging">Jelszó módosítása</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
   

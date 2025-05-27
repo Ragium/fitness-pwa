@@ -15,6 +15,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { WorkoutService } from '../../shared/services/workout.service';
 import { Workout } from '../../shared/models/workout.model';
 import { AuthService } from '../../shared/services/auth.service';
+import { NotificationService } from '../../shared/services/notification.service';
 
 @Component({
   selector: 'app-new-workout',
@@ -45,7 +46,7 @@ export class NewWorkoutComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private snackBar: MatSnackBar,
+    private notificationService: NotificationService,
     private workoutService: WorkoutService,
     private authService: AuthService
   ) {
@@ -121,21 +122,21 @@ export class NewWorkoutComponent implements OnInit {
           this.workoutService.create(workout).subscribe({
             next: () => {
               console.log('Edzés sikeresen mentve');
-              this.snackBar.open(
-                this.isOnline ? 'Edzés sikeresen mentve!' : 'Edzés offline mentve! Szinkronizálás online állapotban.',
-                'Bezár',
-                { duration: 3000 }
-              );
+              if (this.isOnline) {
+                this.notificationService.workoutSaveSuccess();
+              } else {
+                this.notificationService.offlineSave();
+              }
               this.router.navigate(['/workout-list']);
             },
             error: (error) => {
               console.error('Mentési hiba:', error);
-              this.snackBar.open('Hiba történt a mentés során!', 'Bezár', { duration: 3000 });
+              this.notificationService.workoutSaveError();
               this.isLoading = false;
             }
           });
         } else {
-          this.snackBar.open('Nincs bejelentkezett felhasználó!', 'Bezár', { duration: 3000 });
+          this.notificationService.error('Nincs bejelentkezett felhasználó!');
           this.isLoading = false;
         }
       });
@@ -155,9 +156,7 @@ export class NewWorkoutComponent implements OnInit {
         });
       }
       
-      this.snackBar.open('Kérjük, töltse ki az összes kötelező mezőt', 'Bezárás', {
-        duration: 3000
-      });
+      this.notificationService.formError();
     }
   }
 

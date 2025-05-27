@@ -13,13 +13,14 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AuthService } from '../../shared/services/auth.service';
 import { Observable, Subscription } from 'rxjs';
 import { UserService } from '../../shared/services/user.service';
 import { FirebaseError } from 'firebase/app';
+import { NotificationService } from '../../shared/services/notification.service';
 
 @Component({
   selector: 'app-login',
@@ -54,7 +55,7 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private snackBar: MatSnackBar,
+    private notificationService: NotificationService,
     private authService: AuthService,
     private userService: UserService
   ) {
@@ -73,12 +74,13 @@ export class LoginComponent {
 
     this.authService.login(email, password, rememberMe).subscribe({
       next: () => {
-        this.snackBar.open('Sikeres bejelentkezés', 'Bezárás', {duration: 3000});
+        this.notificationService.loginSuccess();
         this.router.navigate(['/dashboard']);
       },
       error: (error: FirebaseError) => {
         console.error(error);
-        this.snackBar.open('Hiba a bejelentkezés során: ' + error.message, 'Bezárás', {duration: 3000});
+        this.notificationService.loginError(error);
+        this.isLoading = false;
       },
       complete: () => {
         this.isLoading = false;
@@ -89,7 +91,7 @@ export class LoginComponent {
   async onForgotPassword() {
     if (this.email.invalid) {
       this.email.markAsTouched();
-      this.snackBar.open('Kérjük, adja meg az email címet a jelszó visszaállításhoz!', 'Bezárás', { duration: 3000 });
+      this.notificationService.formError();
       return;
     }
 
@@ -98,16 +100,12 @@ export class LoginComponent {
 
     this.authService.sendPasswordResetEmail(email).subscribe({
       next: () => {
-        this.snackBar.open('Jelszó visszaállító email elküldve. Kérjük, ellenőrizze postaládáját.', 'Bezárás', { duration: 5000 });
+        this.notificationService.passwordResetSent();
         this.isLoading = false;
       },
       error: (error: FirebaseError) => {
         console.error(error);
-        let errorMessage = 'Hiba történt a jelszó visszaállítás során.';
-        if (error.code === 'auth/user-not-found') {
-          errorMessage = 'Nincs felhasználó ezzel az email címmel.';
-        }
-        this.snackBar.open(errorMessage, 'Bezárás', { duration: 5000 });
+        this.notificationService.passwordResetError(error);
         this.isLoading = false;
       }
     });

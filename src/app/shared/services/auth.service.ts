@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, User, onAuthStateChanged, updatePassword, browserLocalPersistence, browserSessionPersistence, setPersistence, sendPasswordResetEmail } from '@angular/fire/auth';
-import { BehaviorSubject, Observable, from } from 'rxjs';
+import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, User, onAuthStateChanged, updatePassword, browserLocalPersistence, browserSessionPersistence, setPersistence, sendPasswordResetEmail, fetchSignInMethodsForEmail } from '@angular/fire/auth';
+import { BehaviorSubject, Observable, from, map, switchMap, throwError } from 'rxjs';
 import { User as CustomUser } from '../models/user.model';
 import { UserService } from './user.service';
 
@@ -60,6 +60,13 @@ export class AuthService {
   }
 
   sendPasswordResetEmail(email: string): Observable<void> {
-    return from(sendPasswordResetEmail(this.auth, email));
+    return from(fetchSignInMethodsForEmail(this.auth, email)).pipe(
+      switchMap(methods => {
+        if (methods.length === 0) {
+          return throwError(() => ({ code: 'auth/user-not-found' }));
+        }
+        return from(sendPasswordResetEmail(this.auth, email));
+      })
+    );
   }
 }

@@ -5,10 +5,11 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../shared/services/auth.service';
 import { FirebaseError } from '@angular/fire/app';
+import { NotificationService } from '../../shared/services/notification.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -33,7 +34,7 @@ export class ForgotPasswordComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private snackBar: MatSnackBar
+    private notificationService: NotificationService
   ) {
     this.forgotPasswordForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -51,20 +52,15 @@ export class ForgotPasswordComponent {
 
     this.authService.sendPasswordResetEmail(email).subscribe({
       next: () => {
-        this.snackBar.open('Jelszó visszaállító email elküldve. Kérjük, ellenőrizze postaládáját.', 'Bezárás', { duration: 5000 });
+        this.notificationService.passwordResetSent();
         this.isLoading = false;
+        this.forgotPasswordForm.reset();
       },
       error: (error: FirebaseError) => {
         console.error(error);
-        let errorMessage = 'Hiba történt a jelszó visszaállítás során.';
-        if (error.code === 'auth/user-not-found') {
-          errorMessage = 'Nincs felhasználó ezzel az email címmel.';
-        } else if (error.code === 'auth/invalid-email') {
-          errorMessage = 'Érvénytelen email cím formátum.';
-        }
-        this.snackBar.open(errorMessage, 'Bezárás', { duration: 5000 });
+        this.notificationService.passwordResetError(error);
         this.isLoading = false;
-      },
+      }
     });
   }
 } 

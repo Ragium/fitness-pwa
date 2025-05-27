@@ -374,6 +374,6 @@ export class StatsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getExerciseTypes(workout: Workout): string {
-    return workout.exercises.map(e => e.type).join(', ');
+    return workout.exercises.map(e => this.getTypeLabel(e.type)).join(', ');
   }
 }

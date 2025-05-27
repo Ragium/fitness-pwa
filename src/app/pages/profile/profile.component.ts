@@ -5,7 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -16,6 +16,8 @@ import { UserService } from '../../shared/services/user.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { Observable, switchMap, of, Subscription, filter } from 'rxjs';
 import { User as FirebaseUser } from 'firebase/auth';
+import { MatIconModule } from '@angular/material/icon';
+import { NotificationService } from '../../shared/services/notification.service';
 
 
 interface WorkoutStats {
@@ -42,6 +44,7 @@ interface WorkoutStats {
     MatNativeDateModule,
     MatSelectModule,
     MatDividerModule,
+    MatIconModule
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
@@ -64,9 +67,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private snackBar: MatSnackBar,
     private userService: UserService,
-    private authService: AuthService
+    private authService: AuthService,
+    private notificationService: NotificationService
   ) {
     this.profileForm = this.fb.group({
       username: ['', Validators.required],
@@ -136,75 +139,89 @@ export class ProfileComponent implements OnInit, OnDestroy {
   onSubmit() {
     if (this.profileForm.valid && this.user) {
       this.isLoading = true;
+      const updatedUser = { ...this.user };
+      const formValues = this.profileForm.value;
 
-      const updatedUser: User = { ...this.user as User };
-
-      const formData = this.profileForm.value;
-
-      let weightChanged = false;
-      if (formData.weight !== undefined && formData.weight !== null && formData.weight !== this.user?.weight) {
-        weightChanged = true;
-      }
-
-      if (formData.username !== undefined && formData.username !== null) {
-        updatedUser.username = formData.username;
-      }
-      if (formData.email !== undefined && formData.email !== null) {
-        updatedUser.email = formData.email;
-      }
+      // Frissítjük a felhasználói adatokat
+      updatedUser.username = formValues.username;
+      updatedUser.email = formValues.email;
       
-      if (formData.fullName !== undefined && formData.fullName !== null) {
-        const [firstName, lastName] = formData.fullName.split(' ');
-        updatedUser.name = {
-          firstname: firstName || '',
-          lastname: lastName || ''
-        };
-      } else if (updatedUser.name === undefined || updatedUser.name === null) {
-        updatedUser.name = { firstname: '', lastname: ''};
-      }
+      // Név frissítése
+      const nameParts = formValues.fullName.split(' ');
+      updatedUser.name = {
+        firstname: nameParts[0] || '',
+        lastname: nameParts.slice(1).join(' ') || ''
+      };
 
-      if (formData.age !== undefined && formData.age !== null) {
-        updatedUser.age = formData.age;
-      }
-      if (formData.height !== undefined && formData.height !== null) {
-        updatedUser.height = formData.height;
-      }
+      // Numerikus értékek frissítése
+      updatedUser.age = formValues.age ? Number(formValues.age) : 0;
+      updatedUser.height = formValues.height ? Number(formValues.height) : 0;
       
-      console.log('Offline profil mentése, hívás a UserService.update-re...');
-
-      let saveObservable: Observable<any>;
-
-      if (weightChanged) {
-        saveObservable = this.userService.addWeightEntry(updatedUser.id, formData.weight);
+      // Súly frissítése és súlytörténet kezelése
+      const newWeight = formValues.weight ? Number(formValues.weight) : 0;
+      if (newWeight && newWeight !== this.user.weight) {
+        const saveObservable = this.userService.addWeightEntry(updatedUser.id, newWeight);
+        saveObservable.subscribe({
+          next: () => {
+            if (navigator.onLine) {
+              this.notificationService.profileUpdateSuccess();
+            } else {
+              this.notificationService.offlineSave();
+            }
+            this.isLoading = false;
+            
+            // Frissítjük a felhasználói adatokat
+            this.userService.getById(updatedUser.id).subscribe(user => {
+              this.user = user;
+              if (user) {
+                this.profileForm.patchValue({
+                  username: user.username,
+                  email: user.email,
+                  fullName: `${user.name?.firstname} ${user.name?.lastname}`,
+                  age: user.age,
+                  height: user.height,
+                  weight: user.weight
+                });
+              }
+            });
+          },
+          error: (error) => {
+            console.error('Hiba történt a mentés során:', error);
+            this.notificationService.profileUpdateError();
+            this.isLoading = false;
+          }
+        });
       } else {
-        saveObservable = this.userService.update(updatedUser);
-      }
-
-      saveObservable.subscribe({
-        next: () => {
-          console.log('Felhasználói profil sikeresen frissítve');
-          const message = navigator.onLine 
-            ? 'Profil sikeresen frissítve' 
-            : 'Profil offline mentve, szinkronizálás online állapotban';
-          this.snackBar.open(message, 'Bezárás', {
-            duration: 3000
-          });
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Hiba történt a mentés során:', error);
-          this.snackBar.open('Hiba történt a profil mentése során', 'Bezárás', {
-            duration: 3000
-          });
-          this.isLoading = false;
-        }
-      });
-
-      // OPTIMISTA offline kezelés: ha offline vagyunk, azonnal visszajelzünk és leállítjuk a spinnert
-      if (!navigator.onLine) {
-        this.isLoading = false;
-        this.snackBar.open('Profil offline mentve! Szinkronizálás online állapotban.', 'Bezárás', {
-          duration: 3000
+        // Ha nem változott a súly, csak a profil frissítése
+        this.userService.update(updatedUser).subscribe({
+          next: () => {
+            if (navigator.onLine) {
+              this.notificationService.profileUpdateSuccess();
+            } else {
+              this.notificationService.offlineSave();
+            }
+            this.isLoading = false;
+            
+            // Frissítjük a felhasználói adatokat
+            this.userService.getById(updatedUser.id).subscribe(user => {
+              this.user = user;
+              if (user) {
+                this.profileForm.patchValue({
+                  username: user.username,
+                  email: user.email,
+                  fullName: `${user.name?.firstname} ${user.name?.lastname}`,
+                  age: user.age,
+                  height: user.height,
+                  weight: user.weight
+                });
+              }
+            });
+          },
+          error: (error) => {
+            console.error('Hiba történt a mentés során:', error);
+            this.notificationService.profileUpdateError();
+            this.isLoading = false;
+          }
         });
       }
     }
@@ -218,27 +235,23 @@ export class ProfileComponent implements OnInit, OnDestroy {
         next: () => {
           this.isPasswordChanging = false;
           this.passwordForm.reset();
-          const message = navigator.onLine
-            ? 'Jelszó sikeresen módosítva'
-            : 'Jelszó offline módosítva! Szinkronizálás online állapotban.';
-          this.snackBar.open(message, 'Bezárás', {
-            duration: 3000
-          });
+          if (navigator.onLine) {
+            this.notificationService.passwordChangeSuccess();
+          } else {
+            this.notificationService.offlineSave();
+          }
         },
         error: (error) => {
           this.isPasswordChanging = false;
-          this.snackBar.open('Hiba történt a jelszó módosítása során!', 'Bezárás', {
-            duration: 3000
-          });
+          this.notificationService.passwordChangeError();
         }
       });
-      // OPTIMISTA offline kezelés: ha offline vagyunk, azonnal visszajelzünk
+      
+      // OPTIMISTA offline kezelés
       if (!navigator.onLine) {
         this.isPasswordChanging = false;
         this.passwordForm.reset();
-        this.snackBar.open('Jelszó offline módosítva! Szinkronizálás online állapotban.', 'Bezárás', {
-          duration: 3000
-        });
+        this.notificationService.offlineSave();
       }
     }
   }

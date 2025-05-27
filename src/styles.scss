@@ -55,3 +55,28 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+// Snackbar stílusok
+.success-snackbar {
+  background: #4caf50 !important;
+  color: white !important;
+  .mat-simple-snackbar-action {
+    color: white !important;
+  }
+}
+
+.error-snackbar {
+  background: #f44336 !important;
+  color: white !important;
+  .mat-simple-snackbar-action {
+    color: white !important;
+  }
+}
+
+.info-snackbar {
+  background: #2196f3 !important;
+  color: white !important;
+  .mat-simple-snackbar-action {
+    color: white !important;
+  }
+}

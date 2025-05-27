@@ -11,8 +11,6 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
 import { WorkoutService } from '../../shared/services/workout.service';
 import { Workout } from '../../shared/models/workout.model';
 import { AuthService } from '../../shared/services/auth.service';
@@ -25,6 +23,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
 import { filter } from 'rxjs';
+import { NotificationService } from '../../shared/services/notification.service';
 
 const listAnimation = trigger('listAnimation', [
   transition(':enter', [
@@ -53,9 +52,7 @@ const listAnimation = trigger('listAnimation', [
     MatListModule,
     MatProgressSpinnerModule,
     WorkoutCardComponent,
-    MatDialogModule,
-    MatDatepickerModule,
-    MatNativeDateModule
+    MatDialogModule
   ],
   templateUrl: './workout-list.component.html',
   styleUrls: ['./workout-list.component.scss'],
@@ -65,8 +62,6 @@ export class WorkoutListComponent implements OnInit, OnDestroy {
   workouts: Workout[] = [];
   filteredWorkouts: Workout[] = [];
   selectedType: string = 'all';
-  startDate: Date | null = null;
-  endDate: Date | null = null;
   isLoading = false;
   currentDate = new Date();
   isOnline = navigator.onLine;
@@ -78,7 +73,7 @@ export class WorkoutListComponent implements OnInit, OnDestroy {
   hasMore = true;
 
   constructor(
-    private snackBar: MatSnackBar, 
+    private notificationService: NotificationService, 
     private workoutService: WorkoutService,
     private authService: AuthService,
     private router: Router,
@@ -87,16 +82,12 @@ export class WorkoutListComponent implements OnInit, OnDestroy {
     this.onlineCallback = () => {
       this.isOnline = true;
       this.loadData();
-      this.snackBar.open('Online állapot: Az adatok szinkronizálása folyamatban...', 'Bezárás', {
-        duration: 3000
-      });
+      this.notificationService.onlineSync();
     };
 
     this.offlineCallback = () => {
       this.isOnline = false;
-      this.snackBar.open('Offline állapot: Az adatok lokálisan lesznek tárolva', 'Bezárás', {
-        duration: 3000
-      });
+      this.notificationService.offlineMode();
     };
 
     window.addEventListener('online', this.onlineCallback);
@@ -134,15 +125,13 @@ export class WorkoutListComponent implements OnInit, OnDestroy {
           } else {
             this.workouts = newWorkouts;
           }
-          this.filteredWorkouts = [...this.workouts];
+          this.filterWorkouts();
           this.lastDoc = snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1] : this.lastDoc;
           this.hasMore = snapshot.docs.length === this.pageSize;
           this.isLoading = false;
         }).catch(error => {
           console.error('Hiba az edzések betöltésekor:', error);
-          this.snackBar.open('Hiba történt az edzések betöltésekor', 'Bezárás', {
-            duration: 3000
-          });
+          this.notificationService.workoutLoadError();
           this.isLoading = false;
         });
       } else {
@@ -170,9 +159,7 @@ export class WorkoutListComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('Hiba az edzések betöltésekor:', error);
-            this.snackBar.open('Hiba történt az edzések betöltésekor', 'Bezárás', {
-              duration: 3000
-            });
+            this.notificationService.workoutLoadError();
             this.isLoading = false;
           }
         });
@@ -218,79 +205,17 @@ export class WorkoutListComponent implements OnInit, OnDestroy {
   }
 
   filterWorkouts() {
-    let filtered = [...this.workouts];
-
-    // Típus szerinti szűrés
-    if (this.selectedType !== 'all') {
-      filtered = filtered.filter(workout =>
+    if (this.selectedType === 'all') {
+      this.filteredWorkouts = [...this.workouts];
+    } else {
+      this.filteredWorkouts = this.workouts.filter(workout =>
         workout.exercises.some(exercise => exercise.type === this.selectedType)
       );
     }
-
-    // Dátum szerinti szűrés
-    if (this.startDate) {
-      filtered = filtered.filter(workout => 
-        workout.date >= this.startDate!
-      );
-    }
-
-    if (this.endDate) {
-      filtered = filtered.filter(workout => 
-        workout.date <= this.endDate!
-      );
-    }
-
-    this.filteredWorkouts = filtered;
   }
 
   onTypeChange() {
     this.filterWorkouts();
-  }
-
-  onDateChange() {
-    this.filterWorkouts();
-  }
-
-  clearDateFilters() {
-    this.startDate = null;
-    this.endDate = null;
-    this.filterWorkouts();
-  }
-
-  onDeleteWorkout(id: string) {
-    if (!this.isOnline) {
-      this.snackBar.open('Offline állapotban nem lehet törölni az edzést', 'Bezárás', {
-        duration: 3000
-      });
-      return;
-    }
-
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '300px',
-      data: {
-        title: 'Edzés törlése',
-        message: 'Biztosan törölni szeretnéd ezt az edzést?'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result && this.loggedInUser$) {
-        this.workoutService.delete(id, this.loggedInUser$?.uid).subscribe({
-          next: () => {
-            this.snackBar.open('Edzés sikeresen törölve', 'Bezárás', {
-              duration: 3000
-            });
-            this.loadData();
-          },
-          error: (error) => {
-            console.error('Hiba a törlés során:', error);
-            this.snackBar.open('Hiba történt a törlés során', 'Bezárás', {
-              duration: 3000
-            });
-          }
-        });
-      }
-    });
   }
 
   getTypeLabel(type: string): string {
@@ -341,5 +266,35 @@ export class WorkoutListComponent implements OnInit, OnDestroy {
 
   editWorkout(id: string): void {
     this.router.navigate(['/edit-workout', id]);
+  }
+
+  onDeleteWorkout(id: string) {
+    if (!this.isOnline) {
+      this.notificationService.offlineMode();
+      return;
+    }
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '300px',
+      data: {
+        title: 'Edzés törlése',
+        message: 'Biztosan törölni szeretnéd ezt az edzést?'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && this.loggedInUser$) {
+        this.workoutService.delete(id, this.loggedInUser$?.uid).subscribe({
+          next: () => {
+            this.notificationService.workoutDeleteSuccess();
+            this.loadData();
+          },
+          error: (error) => {
+            console.error('Hiba a törlés során:', error);
+            this.notificationService.workoutDeleteError();
+          }
+        });
+      }
+    });
   }
 }
