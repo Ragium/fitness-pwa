@@ -160,7 +160,7 @@ export class EditWorkoutComponent implements OnInit {
           
           this.workoutService.update(workout).subscribe({
             next: () => {
-              console.log('Edzés sikeresen frissítve');
+              
               this.snackBar.open(
                 this.isOnline ? 'Edzés sikeresen frissítve!' : 'Edzés offline frissítve! Szinkronizálás online állapotban.',
                 'Bezár',

@@ -19,7 +19,7 @@ export class AuthGuard implements CanActivate {
       filter(user => user !== undefined),
       take(1),
       map(user => {
-        console.log('[GUARD] Auth user:', user);
+        
         if (user) {
           return true;
         }
@@ -31,14 +31,14 @@ export class AuthGuard implements CanActivate {
             if (parsedUser && parsedUser.uid) {
               // Beállítjuk az AuthService userSubject-jébe is
               (this.authService as any).userSubject.next(parsedUser);
-              console.log('[GUARD] LocalStorage user:', parsedUser);
+              
               return true;
             }
           } catch (e) {
             console.error('[GUARD] LocalStorage parse error:', e);
           }
         }
-        console.log('[GUARD] Nincs user, unauthorized!');
+        
         return this.router.createUrlTree(['/unauthorized']);
       })
     );

@@ -77,22 +77,20 @@ export class AppComponent implements OnInit, OnDestroy {
       window.addEventListener('online', this.onlineCallback);
 
       this.authS.isUserLoggedIn().subscribe(user =>{
-        console.log(user);
         this.loggedInUser = user;
-        console.log('Email: ', this.loggedInUser?.email);
         localStorage.setItem('user', JSON.stringify(this.loggedInUser));
       }, error =>{
         console.error(error);
         localStorage.setItem('user', JSON.stringify('null'));
       })
-}
+  }
 
-public ngOnDestroy(): void {
-  this.subscription?.unsubscribe();
+  public ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
 
-  window.removeEventListener('offline', this.offlineCallback);
-  window.removeEventListener('online', this.onlineCallback);
-}
+    window.removeEventListener('offline', this.offlineCallback);
+    window.removeEventListener('online', this.onlineCallback);
+  }
 
    constructor(private authS: AuthService) {
 
@@ -111,7 +109,6 @@ public ngOnDestroy(): void {
   logout() {
     this.authS.logout().subscribe({
       next: () => {
-        console.log('Sikeres kijelentkezés');
         this.router.navigate(['/login']);
       },
       error: (error: FirebaseError) => {

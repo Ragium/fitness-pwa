@@ -6,7 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
@@ -15,7 +15,6 @@ import { User as FirebaseUser } from 'firebase/auth';
 import { User } from '../../shared/models/user.model';
 import { FirebaseError } from '@angular/fire/app';
 import { UserCredential } from 'firebase/auth';
-import { NotificationService } from '../../shared/services/notification.service';
 
 @Component({
   selector: 'app-register',
@@ -42,7 +41,7 @@ export class RegisterComponent {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private notificationService: NotificationService,
+    private snackBar: MatSnackBar,
     private auth: AuthService,
     private location: Location,
     private us: UserService
@@ -77,7 +76,6 @@ export class RegisterComponent {
 
       this.auth.signup(email, password).subscribe({
         next: (cred: UserCredential) => {
-          console.log('Auth sikeres:', cred);
           if (!cred.user?.uid) {
             throw new Error('Nem sikerült létrehozni a felhasználót');
           }
@@ -96,31 +94,51 @@ export class RegisterComponent {
                 height: this.registerForm.get('height')?.value as number,
                 weight: this.registerForm.get('weight')?.value as number
               };
-              console.log('Létrehozandó felhasználó:', user);
+              
               
               this.us.createUserProfile(user).subscribe({
                 next: () => {
-                  console.log('Felhasználói profil sikeresen létrehozva');
-                  this.notificationService.registerSuccess();
+              
+                  this.snackBar.open('Sikeres regisztráció', 'Bezárás', {
+                    duration: 3000
+                  });
                   this.router.navigate(['/login']);
                 },
                 error: (error: FirebaseError) => {
                   console.error('Hiba történt:', error);
-                  this.notificationService.registerError(error);
+                  let errorMessage = 'Hiba történt a regisztráció során';
+                  if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'Ez az email cím már használatban van';
+                  } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'A jelszó túl gyenge';
+                  }
+                  this.snackBar.open(errorMessage, 'Bezárás', {
+                    duration: 3000
+                  });
                   this.isLoading = false;
                 }
               });
             },
             error: (error: FirebaseError) => {
               console.error('Hiba történt:', error);
-              this.notificationService.profileUpdateError();
+              this.snackBar.open('Hiba történt a profil frissítése során', 'Bezárás', {
+                duration: 3000
+              });
               this.isLoading = false;
             }
           });
         },
         error: (error: FirebaseError) => {
           console.error('Hiba történt:', error);
-          this.notificationService.registerError(error);
+          let errorMessage = 'Hiba történt a regisztráció során';
+          if (error.code === 'auth/email-already-in-use') {
+            errorMessage = 'Ez az email cím már használatban van';
+          } else if (error.code === 'auth/weak-password') {
+            errorMessage = 'A jelszó túl gyenge';
+          }
+          this.snackBar.open(errorMessage, 'Bezárás', {
+            duration: 3000
+          });
           this.isLoading = false;
         }
       });

@@ -129,7 +129,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           }
         });
       } else {
-        console.log('Nincs bejelentkezett felhasználó');
         this.isLoading = false;
         this.recentWorkouts.set([]);
         this.barChartData.datasets[0].data = [0, 0, 0, 0, 0, 0, 0];
@@ -142,7 +141,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       if (user) {
         this.workoutService.getByUserId(user.uid).subscribe({
           next: (workouts: Workout[]) => {
-            console.log('Edzések betöltve:', workouts.length);
             this.processWorkouts(workouts);
           },
           error: (error: any) => {

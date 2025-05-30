@@ -88,8 +88,6 @@ export class StatsComponent implements OnInit, AfterViewInit, OnDestroy {
       filter((user): user is FirebaseUser | null => user !== undefined)
     ).subscribe(user => {
       if (user) {
-        console.log('Felhasználó bejelentkezve:', user.uid);
-        
         // Felhasználói adatok betöltése
         this.userService.getById(user.uid).subscribe({
           next: (userData) => {
@@ -103,7 +101,6 @@ export class StatsComponent implements OnInit, AfterViewInit, OnDestroy {
         // Edzések betöltése
         this.workoutService.getByUserId(user.uid).subscribe({
           next: (workouts) => {
-            console.log('Betöltött edzések:', workouts);
             this.recentWorkouts = workouts
               .map(workout => ({
                 ...workout,
@@ -121,7 +118,6 @@ export class StatsComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         });
       } else {
-        console.log('Nincs bejelentkezett felhasználó');
         this.isLoading = false;
       }
     });
@@ -151,12 +147,10 @@ export class StatsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   updateCharts(workouts: Workout[]) {
-    console.log('updateCharts hívva, edzések száma:', workouts.length);
     this.destroyCharts();
 
     // Pie chart adatok frissítése - testrészek szerinti eloszlás
     const typeCounts = this.calculateTypeDistribution(workouts);
-    console.log('Kiszámolt típus eloszlás:', typeCounts);
 
     const pieData = {
       labels: Object.keys(typeCounts),
@@ -173,11 +167,8 @@ export class StatsComponent implements OnInit, AfterViewInit, OnDestroy {
       }]
     };
 
-    console.log('Pie chart adatok:', pieData);
-
     // Line chart adatok frissítése - napi összesített súly
     const weeklyWeights = this.calculateWeeklyWeights(workouts);
-    console.log('Heti súlyok:', weeklyWeights);
 
     const lineData = {
       labels: ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap'],
@@ -191,72 +182,64 @@ export class StatsComponent implements OnInit, AfterViewInit, OnDestroy {
       }]
     };
 
-    console.log('Line chart adatok:', lineData);
-
     // Várjunk egy kicsit, hogy a DOM frissüljön
     setTimeout(() => {
       if (this.pieChartRef?.nativeElement) {
-        console.log('Pie chart canvas megtalálva, létrehozom a grafikont');
         this.pieChart = new Chart(this.pieChartRef.nativeElement, {
           type: 'pie',
           data: pieData,
           options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: true,
-        position: 'bottom',
-        labels: {
-          padding: 20,
-          font: {
-            size: 12
-          }
-        }
-      }
-    }
-          }
-        });
-      } else {
-        console.error('Pie chart canvas nem található!');
-      }
-
-      if (this.lineChartRef?.nativeElement) {
-        console.log('Line chart canvas megtalálva, létrehozom a grafikont');
-        this.lineChart = new Chart(this.lineChartRef.nativeElement, {
-          type: 'line',
-          data: lineData,
-          options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: true,
-        position: 'bottom',
-        labels: {
-          padding: 20,
-          font: {
-            size: 12
-          }
-        }
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Összesített súly (kg)',
-          font: {
-            size: 12
-          }
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                  padding: 20,
+                  font: {
+                    size: 12
+                  }
                 }
               }
             }
           }
         });
-      } else {
-        console.error('Line chart canvas nem található!');
+      }
+
+      if (this.lineChartRef?.nativeElement) {
+        this.lineChart = new Chart(this.lineChartRef.nativeElement, {
+          type: 'line',
+          data: lineData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                  padding: 20,
+                  font: {
+                    size: 12
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Összesített súly (kg)',
+                  font: {
+                    size: 12
+                  }
+                }
+              }
+            }
+          }
+        });
       }
     });
   }

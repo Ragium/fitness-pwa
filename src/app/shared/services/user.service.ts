@@ -37,7 +37,6 @@ export class UserService {
         { includeMetadataChanges: true },
         (snapshot) => {
           const source = snapshot.metadata.fromCache ? "local cache" : "server";
-          console.log("Felhasználói lista innen érkezett: " + source);
           
           const users = snapshot.docs.map(doc => ({
             id: doc.id,

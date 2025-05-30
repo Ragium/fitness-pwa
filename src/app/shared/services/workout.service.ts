@@ -56,7 +56,6 @@ export class WorkoutService {
       const unsubscribe = onSnapshot(q, 
         (snapshot) => {
           const source = snapshot.metadata.fromCache ? "local cache" : "server";
-          console.log("Edzések adatai innen érkeztek: " + source);
           
           const workouts = snapshot.docs.map(doc => ({
             id: doc.id,
@@ -96,7 +95,7 @@ export class WorkoutService {
           const unsubscribe = onSnapshot(q, 
             (snapshot) => {
               const source = snapshot.metadata.fromCache ? "local cache" : "server";
-              console.log("Szűrt edzések adatai innen érkeztek: " + source);
+
               
               const workouts = snapshot.docs.map(doc => ({
                 id: doc.id,
