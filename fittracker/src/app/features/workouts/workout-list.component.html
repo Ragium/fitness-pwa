@@ -1,0 +1,41 @@
+<div class="list-header">
+  <div>
+    <p class="eyebrow">Mai sorozatok</p>
+    <h2>Edzésnapló</h2>
+  </div>
+</div>
+
+<ul class="workout-list">
+  <li *ngFor="let workout of workouts" [class]="statusClass(workout.status)">
+    <div class="row-top">
+      <div>
+        <p class="exercise">{{ workout.exercise }}</p>
+        <p class="meta">
+          {{ workout.sets.length }} szett · összvolumen: {{ workout.sets | volume }} kg
+        </p>
+      </div>
+      <span class="status-pill" [ngClass]="statusClass(workout.status)">{{ statusCopy(workout.status) }}</span>
+    </div>
+
+    <div class="row-bottom">
+      <p class="timestamp">{{ workout.createdAt | date: 'short' }}</p>
+      <div class="actions">
+        <button type="button" *ngIf="workout.status === 'error'" (click)="retry.emit(workout)" class="btn-retry">
+          Szinkron újra
+        </button>
+        <button type="button" (click)="edit.emit(workout)" class="btn-edit" aria-label="Edzés szerkesztése">
+          ✏️
+        </button>
+        <button type="button" (click)="delete.emit(workout)" class="btn-delete" aria-label="Edzés törlése">
+          🗑️
+        </button>
+      </div>
+    </div>
+
+    <ul class="sets-list">
+      <li *ngFor="let set of workout.sets; let i = index">
+        {{ i + 1 }}. szett: {{ set.repetitions }} ism. × {{ set.weight }} kg <span *ngIf="set.note">({{ set.note }})</span>
+      </li>
+    </ul>
+  </li>
+</ul>

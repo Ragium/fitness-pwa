@@ -1,0 +1,16 @@
+type: firebase_hosting
+build:
+  command: "cd fittracker && npm ci && npm run build"
+  artifacts:
+    - "fittracker/dist/fittracker/browser"
+serve:
+  command: "cd fittracker && npx http-server -s dist/fittracker/browser -p 4200 -a 0.0.0.0"
+  base_url: "http://localhost:4200"
+smoke:
+  path: "/"
+  expect_status: 200
+iac:
+  tool: "terraform"
+  dir: "infra/terraform"
+  plan_out: "infra/terraform/plan.out"
+  notes: "Firebase Hosting infra declared as Terraform per ADR-0002; every PR must attach the plan artifact before apply."

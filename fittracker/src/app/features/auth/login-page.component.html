@@ -1,0 +1,44 @@
+<section class="login">
+  <div class="login-card">
+    <p class="eyebrow">US-01 · Gyors bejelentkezés</p>
+    <h1>Jelentkezz be és szinkronizálj</h1>
+    <p class="lead">
+      A FitTracker offline-first módon működik. Stabil internet mellett érvényesítjük a hitelesítést, de a korábban
+      bejelentkezett felhasználók offline is visszatérhetnek.
+    </p>
+
+    <div class="status-pill" [class.offline]="!(online$ | async)">
+      <span class="dot"></span>
+      {{ (online$ | async) ? 'Online kapcsolat aktív' : 'Offline mód – cache-elt session szükséges' }}
+    </div>
+
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        <span>Email cím</span>
+        <input type="email" formControlName="email" placeholder="pl. anna@fittracker.app" autocomplete="username" />
+        <small *ngIf="emailInvalid">Adj meg valós email címet.</small>
+      </label>
+
+      <label>
+        <span>Jelszó</span>
+        <input type="password" formControlName="password" placeholder="••••••••" autocomplete="current-password" />
+        <small *ngIf="passwordInvalid">A jelszó minimum 6 karakter.</small>
+      </label>
+
+      <button type="submit" [disabled]="loading || form.invalid">
+        {{ loading ? 'Ellenőrzés...' : 'Belépés' }}
+      </button>
+    </form>
+
+    <p class="hint">
+      <strong>Offline tippek:</strong> ha egyszer már beléptél, a PWA eltárolja a szükséges tokent, így repülő üzemmódban
+      is eléred az edzéslistát.
+    </p>
+
+    <p class="hint">
+      Nincs még fiókod? <a routerLink="/register">Regisztrálj</a>
+    </p>
+
+    <a class="back-link" routerLink="/workouts">Vissza az edzéslistára</a>
+  </div>
+</section>

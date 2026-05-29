@@ -1,0 +1,8 @@
+student:
+  name: "Rostás Bence Gábor"
+  id: "DNF8W4"
+project:
+  title: "FitTracker – Offline-first PWA edzésnapló hobbisportolóknak"
+  product_ml_features: false
+ai:
+  log_min_entries_per_sprint: 3

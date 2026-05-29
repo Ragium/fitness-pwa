@@ -1,0 +1,65 @@
+:host {
+  display: block;
+}
+
+.summary-card {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.25), rgba(56, 189, 248, 0.15));
+  border-radius: 32px;
+  padding: 2rem;
+  color: #0f1620;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  color: #0f172a;
+  opacity: 0.7;
+  margin: 0;
+}
+
+h2 {
+  margin: 0.4rem 0 1.2rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.stats-grid div {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 24px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.stats-grid span {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569;
+}
+
+.stats-grid strong {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.recent {
+  margin-top: 1.5rem;
+}
+
+.recent span {
+  font-weight: 600;
+}
+
+.recent ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.5rem;
+  color: #1e293b;
+}

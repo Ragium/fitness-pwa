@@ -1,0 +1,26 @@
+{
+  "id": "INT-001",
+  "date": "2025-10-17",
+  "method": "in-person",
+  "participant": {
+    "pseudonym": "Mari",
+    "segment": "25 éves dolgozó hobbisportoló, heti 2-3 alkalommal edz"
+  },
+  "consent": true,
+  "insights": [
+    "Az edzéseket jelenleg fejben vagy a partnerére hagyatkozva követi, ami pontatlanságot és visszakeresési nehézséget okoz.",
+    "A motiváció könnyen csökken, ha nem látja vizuálisan a fejlődését vagy a kihagyott időszakokat.",
+    "A rugalmas, személyre szabható naplózás sokkal fontosabb számára, mint az előre beállított edzéstervek."
+  ],
+  "pain_points": [
+    "Túl sok reklám és idegesítő, gépi hangú narráció a korábbi appokban.",
+    "A kötött edzésterv és kötelező pihenőnapok rugalmatlanná tették az alkalmazást.",
+    "A konditeremben nincs wifi, így az appokat nem tudja offline használni."
+  ],
+  "quotes": [
+    "\"Nem látjuk azt, hogy végül is mit fejlődünk.\"",
+    "\"Rengetegszer elvesztettem a motivációmat, mindig közbejött valami fontosabb.\"",
+    "\"Tök jó lenne egy havi, meg egy éves statisztika... meg az ilyen kis jutalmak, kitűzők.\"",
+    "\"Járjak le úgy, amikor én szeretnék. Ha este, ha reggel — de ne legyen megmondva, mikor muszáj.\""
+  ]
+}

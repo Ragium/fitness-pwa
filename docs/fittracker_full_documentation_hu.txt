@@ -1,0 +1,76 @@
+FITTRACKER TELJES DOKUMENTÁCIÓ
+Verzió 0.2
+
+Címzett
+You felelsz a termék irányításáért és az üzemeltetésért. Your feladat a termék célok és a technikai megoldás összehangolása.
+
+Üzleti cél
+A termék célja az edzésszervezés és rögzítés egyszerűsítése offline helyzetben. A megoldás csökkenti a sorozatok elvesztését és gyors visszajelzést ad edzés közben.
+
+Problémák és hatások
+A konditerem wifi gyakran hiányzik vagy instabil. A felhasználó ilyenkor nem tud adatot rögzíteni. A megoldás a rögzítés zavartalanságát és az adatbiztonságot erősíti.
+
+Értékajánlat
+Gyors belépés. Offline rögzítés. Automatikus felhő szinkron, amikor visszajön a kapcsolat. Azonnali visszajelzés a sorozat státuszáról.
+
+Célpont és felhasználói profilok
+Visszatérő edzők, akik rövid időn belül akarnak rögzíteni egy sorozatot. Új felhasználók, akik vezetést várnak üres állapotban. Edzők, akik mobilon használják a PWA felületet edzés közben.
+
+Termék scope
+Bejelentkezés email és jelszó. Offline visszatérés korábbi belépés után. Sorozat rögzítés edzés közben. Sorozat lista és státusz jelzés. Üres állapot kártya, amely elindítja az új sorozat rögzítését. Összegző kártya napi volumen, streak, utolsó három edzés dátum alapján.
+
+Kívül eső scope
+Admin felület és backoffice nincs részletezve. Összetett edzésterv kezelés nincs részletezve.
+
+Folyamatok felhasználói szemmel
+Belépés. Online belépéskor a rendszer Firebase Auth alapú azonosításra épül. Offline módban a rendszer a korábban tárolt session alapján ad hozzáférést.
+Új sorozat rögzítés. A felhasználó kitölti a gyakorlat, ismétlés, súly mezőket. A rendszer elmenti a sort helyben, majd a lista tetejére teszi.
+Szinkron. Amikor elérhető a kapcsolat, a sorok feltöltése automatikus. Hiba esetén a sor státusza hibára változik, újrapróbálkozás indítható.
+
+Funkcionális követelmények
+A rendszer rögzíti a sorozatokat offline módban. A rendszer mutatja a sorozatok státuszát várakozik, szinkronizálva, hiba. A rendszer naplózza a szinkron eseményeket. A rendszer engedi a sorozat szerkesztését és törlését. A rendszer közli a hibákat toast üzenetekkel.
+
+Nem funkcionális követelmények
+TTFB cél a fő oldalra 1.5 másodperc alatt preview szerveren. Offline működés repülőmódban is használható a lista és az űrlap. Szinkron megbízhatóság, három próbálkozáson belül legalább 98 százalék siker. Hozzáférhetőség, WCAG 2.1 AA cél. Hibajelzés, hálózati hiba esetén 5 másodpercen belül látható toast üzenet.
+
+Architektúra áttekintés
+Frontend Angular PWA. Service Worker aktív build és preview alatt. Helyi tárhely IndexedDB. Auth és felhő adattár Firebase Auth és Firestore. Hoszting Firebase Hosting. IaC Terraform.
+
+Fő modulok
+Auth modul kezeli a belépést és a session visszatöltést. Workouts modul kezeli az űrlapot, a listát és az összegzést. Offline tár modul kezeli a munkamenetet és a sorozatok tárolását. Sync modul kezeli a felhő feltöltést és a hibák naplózását. Online státusz modul figyeli a kapcsolatot.
+
+Adatmodell
+WorkoutSet tartalmazza a súlyt, ismétlés számot, RPE értéket és megjegyzést. WorkoutDraft tartalmazza a gyakorlat nevét és a sorozatokat. WorkoutEntity tárolja a helyi azonosító, ownerId, időbélyegek, státusz, próbálkozás szám adatait. SyncEvent tárolja az edzés azonosítóját, státuszt és időbélyeget. Session tárolja a felhasználó email, uid, utolsó belépés, hasholt jelszó adatait. WorkoutSession tárolja az edzés strukturális adatait, gyakorlatokat és sorozatokat.
+
+Adatpélda
+Gyakorlat Fekvenyomás. Sorozat 1, 60 kg, 8 ismétlés. Sorozat 2, 70 kg, 6 ismétlés. Státusz várakozik, majd szinkronizálva.
+
+Offline tárolás
+A helyi adatbázis neve fittracker offline db. Objektumtárak workouts, sessions, sync_events, workout_sessions. A rendszer rendezett listát ad vissza dátum alapján.
+
+Szinkron folyamat
+A rendszer keresi a várakozó sorokat és feltölti őket, amikor online állapot elérhető. A szinkron sor 15 másodpercenként újrapróbál, ha a kapcsolat elérhető. Sikeres feltöltés után a státusz szinkronizálva lesz. Hiba esetén a státusz hiba lesz és a hiba üzenet tárolódik.
+
+Biztonság és adatkezelés
+A jelszó hash SHA 256 algoritmussal készül. Offline belépés csak korábban bejelentkezett felhasználónál engedélyezett. A felhő oldali műveletek bejelentkezett felhasználóra korlátozódnak. A rendszer nem tárol nyers jelszót.
+
+Konfiguráció és környezetek
+Fejlesztői környezetben a szinkron kikapcsolható. Élesen a szinkron engedélyezett. A Firebase kulcsok a környezeti fájlokból jönnek.
+
+Build és futtatás
+Fejlesztéshez npm install és npm run start használható. Buildhez npm run build használható. Preview módban npm run preview használható.
+
+Deploy és infra
+A hoszting Firebase Hosting. Az infra változások Terraformmal követhetők. Minden változás előtt terv készül és felülvizsgálaton megy át.
+
+Tesztelés
+Acceptance tesztek írják le az üres állapot, offline mentés, szinkron sor viselkedést. Unit tesztek ellenőrzik a store és a cache logikát. A11y teszt cél a WCAG 2.1 AA követelményeknek megfelelés.
+
+Megfigyelés és üzemeltetés
+A felhasználó értéket ad a toast üzenetekből. A fejlesztők logokat használnak a hiba események követésére. A státusz jelvények segítik az adatbizalom érzetet.
+
+Kockázatok és kezelés
+Firebase kvóta limitek költség kockázatot hoznak. A csapat kvóta figyelést állít be és időben lépi meg a csomag váltását. Vendor lock in kockázat létezik, a domain logika kliens oldalon marad.
+
+További fejlesztések
+Valós Firebase projekt integráció. Teljes elfogadási teszt futtatás automatizálása. Teljes a11y audit és teljesítmény mentes.

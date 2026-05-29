@@ -1,0 +1,51 @@
+<form class="workout-form" (ngSubmit)="handleSubmit()" [formGroup]="form" aria-label="Új sorozat hozzáadása">
+  <div class="form-grid">
+    <label>
+      <span>Gyakorlat *</span>
+      <input
+        #exerciseInput
+        type="text"
+        formControlName="exercise"
+        placeholder="pl. Fekvenyomás"
+        autocomplete="off"
+      />
+      <small *ngIf="form.controls.exercise.invalid && form.controls.exercise.touched">A mező kitöltése kötelező.</small>
+    </label>
+  </div>
+
+  <div formArrayName="sets" class="sets">
+    <div class="set-row" *ngFor="let setCtrl of setsArray.controls; let i = index" [formGroupName]="i">
+      <label>
+        <span>Ismétlés *</span>
+        <input type="number" formControlName="repetitions" placeholder="12" min="1" />
+        <small *ngIf="setCtrl.get('repetitions')?.invalid && setCtrl.get('repetitions')?.touched">
+          Adj meg 1-nél nagyobb számot.
+        </small>
+      </label>
+
+      <label>
+        <span>Súly (kg) *</span>
+        <input type="number" formControlName="weight" placeholder="40" min="0" />
+        <small *ngIf="setCtrl.get('weight')?.invalid && setCtrl.get('weight')?.touched">
+          Adj meg 0-nál nagyobb számot.
+        </small>
+      </label>
+
+      <label>
+        <span>Jegyzet</span>
+        <input type="text" formControlName="note" placeholder="opcionális" />
+      </label>
+
+      <button type="button" class="remove" (click)="removeSet(i)" [disabled]="setsArray.length <= 1">✕</button>
+    </div>
+
+    <button type="button" class="add-set" (click)="addSet()">+ Új szett</button>
+  </div>
+
+  <label class="note">
+    <span>Megjegyzés</span>
+    <textarea formControlName="note" rows="2" placeholder="Rövid jegyzet (opcionális)"></textarea>
+  </label>
+
+  <button type="submit" [disabled]="disableSave">Mentés offline</button>
+</form>

@@ -1,0 +1,27 @@
+{
+  "id": "INT-002",
+  "date": "2025-10-17",
+  "method": "online",
+  "participant": {
+    "pseudonym": "Peti",
+    "segment": "26 éves egyetemista férfi, rendszeresen edző hobbisportoló"
+  },
+  "consent": true,
+  "insights": [
+    "A Gymshark alkalmazás használatával elkezdte tudatosabban követni az edzéseit, különösen a PR-ok és repszámok rögzítését.",
+    "Fontos számára a vizuális visszajelzés (grafikonok, fejlődés ábrázolása), mert ez ad hosszú távú motivációt.",
+    "Zavarónak tartja az előfizetés-kényszert és a reklámokat a legtöbb appban; szívesen használna egy ingyenes, reklámmentes alternatívát."
+  ],
+  "pain_points": [
+    "A legtöbb app azonnal fizetős előfizetést kér, ami elriasztja a kipróbálástól.",
+    "A reklámok tolakodóak és gyakran nem relevánsak a fitness témához.",
+    "Kevés alkalmazás integrálható okosórákkal vagy képes automatikusan érzékelni a mozdulatokat (pl. ismétlésszám, súly)."
+  ],
+  "quotes": [
+    "\"Az eredmények nélkül nem fenntartható a motiváció. Ezért is szoktak sokan kisebb célokat kitűzni.\"",
+    "\"Ha letöltesz ingyen egy alkalmazást, az első lépés, hogy fizess elő. Ez elég eltanácsoló.\"",
+    "\"Nagyon jól motiválna, ha grafikonon látnám a PR-okat, a maximum súlyokat, a fejlődést.\"",
+    "\"Az okos kiegészítőkkel való integráció nagyon hasznos lenne – például ha az óra érzékelné, hányszor nyomtam ki a súlyt.\"",
+    "\"Nincs bajom a reklámokkal, de legalább relevánsak legyenek, ne random játékokat dobáljon egy fitness app.\""
+  ]
+}

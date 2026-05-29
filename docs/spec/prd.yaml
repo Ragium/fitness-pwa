@@ -1,0 +1,90 @@
+meta:
+  version: "1.1"
+  last_updated: "2025-02-12"
+
+problem:
+  statement: "A 20-40 éves hobbisportolók számára az edzések naplózása demotiváló, pontatlan és nehezen fenntartható. A jelenlegi appok túl reklámosak, fizetős korlátokkal terheltek, nem működnek konzisztensen offline, és túlságosan kötöttek, így az edzések rögzítése gyorsan elmarad, a motiváció elveszik."
+
+target_audience:
+  personas:
+    - name: "Mari"
+      segment: "25 éves dolgozó, heti 2-3x edz, fejben vagy partnerrel követi az edzéseket."
+      needs:
+        - "Egyszerű, rugalmas naplózás lehetősége"
+        - "Vizuális, könnyen értelmezhető fejlődés-kimutatás"
+        - "Személyre szabhatóság az edzés típusaihoz"
+        - "Offline működés konditeremben"
+        - "Reklámmentesség"
+    - name: "Feri"
+      segment: "27 éves férfi, Google Drive-ban vezeti az edzéseket, cél-orientált, hosszútávú motivációt keres, gyakran hullámvölgyekkel küzd."
+      needs:
+        - "Áttekinthető, strukturált naplózás"
+        - "Motivációs rendszer: célok, streak, ranglista"
+        - "Offline használat utazások, rossz net esetén"
+        - "Könnyű visszakeresés, kimutatás"
+        - "Reklámmentesség, fizetős fal nélkül"
+    - name: "Peti"
+      segment: "26 éves egyetemista, rendszeres app-használó, cél- és grafikon-orientált, reklámmentes alternatívát keres, támogatná az okosóra-integrációt."
+      needs:
+        - "Motivációs célkitűzések, vizualizációk"
+        - "Gyors, letisztult kezelőfelület"
+        - "Okoskiegészítők integrációja"
+        - "Reklám nélküli, ingyenesen kipróbálható app"
+        - "Automatikus adatrögzítés (ismétlésszám, súly)"
+    - name: "Kati"
+      segment: "35 éves dolgozó családanya, személyi edzővel edz, motivációját pénzügyi elkötelezettség adja."
+      needs:
+        - "Havi/éves/trend alapú statisztika"
+        - "Gyakorlatra/gépre bontott adatrögzítés"
+        - "Motivációs visszacsatolás"
+        - "Rugalmas, nem kötött edzésterv"
+        - "Offline naplózás, mert net nem mindig elérhető"
+    - name: "Jani"
+      segment: "39 éves, személyi edzővel/egyedül edz, digitális trófeák motiválják, szeretné pontosan követni a súlyokat, gyakorlatokat, többféle mozgásformát egy appban kezelni."
+      needs:
+        - "Többféle mozgásforma (kondi, futás, bicikli, stb.) nyilvántartása egy appban"
+        - "Digitális jutalmak, statisztikák motivációért"
+        - "Pontosan rögzíthető súlyok, ismétlések, gépek"
+        - "Offline használat"
+        - "Egyszerű visszakeresés, átlátható dizájn"
+
+value_proposition:
+  concise: "A FitTracker egy offline-first, reklámmentes, testreszabható edzésnapló PWA, amely motivációs jutalmakkal, célkövetéssel és vizuális statisztikákkal segíti a hobbisportolókat abban, hogy tényleg kövessék fejlődésüket és hosszú távon fenntartsák a naplózásukat."
+  differentiators:
+    - "Teljes offline használat minden funkcióhoz"
+    - "Reklámmentes, nincs fizetős tartalomfal"
+    - "Vizuális, testreszabható fejlődéskimutatás (havi/éves/trend, gépre/gyakorlatra bontva)"
+    - "Motivációs rendszer: streak, jutalom, célkitűzések, digitális trófeák"
+    - "Integráció okoseszközökkel (opcionális)"
+    - "Egyszerű, rugalmas kezelőfelület minden típusú edzéshez"
+
+scope:
+  in:
+    - "Offline naplózás, offline statisztika, helyi szinkronizáció"
+    - "Célkitűzések, streak, digitális trófea/jutalom"
+    - "Bármilyen gyakorlat/mozgásforma kezelése, teljes testreszabhatóság"
+    - "Havi, éves, trend alapú vizuális fejlődés-kimutatás, max súlyok"
+    - "Reklámmentesség, egyszerű felhasználói élmény"
+  future:
+    - "Okosóra/adatimport (opcionális, PWA Web Bluetooth/Web Share) — Future/Nice-to-have, legkorábban Sprint 4+"
+  out:
+    - "Automatikusan generált edzéstervek, kötelező napirend"
+    - "Közösségi feed, globális versenyek (csak privát/haveri leaderboard)"
+    - "Fizetős funkciók, előfizetéses korlátok"
+    - "Videós edzésinstrukciók"
+    - "Táplálkozási napló, étrend funkciók"
+    - "Admin felület"
+
+success_metrics:
+  - "Legalább 20 felhasználó 1 hónapon át rendszeresen naplóz (≥10 edzés/fő)"
+  - "Felhasználói elégedettség ≥ 4.2/5"
+  - "Interjúalanyokhoz képest az új felhasználóknál ≥30%-kal több naplózott edzés 1 hónapon belül"
+
+risks:
+  - "Felhasználói motiváció hosszú távú fenntartása nehéz"
+  - "Offline-first architektúra technikai komplexitás"
+  - "Okoseszköz-integráció nehézkessége"
+  - "A piacon megjelenhet egy agresszíven marketingelt, hasonló app"
+
+
+first_tech_decision_ref: "docs/adr/0003-pwa-offline-first-architecture.md"

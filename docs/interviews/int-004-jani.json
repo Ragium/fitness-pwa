@@ -1,0 +1,26 @@
+{
+  "id": "INT-004",
+  "date": "2025-10-17",
+  "method": "online",
+  "participant": {
+    "pseudonym": "Jani",
+    "segment": "39 éves dolgozó férfi, három hete kezdett rendszeres edzőtermi edzéseket személyi edzővel"
+  },
+  "consent": true,
+  "insights": [
+    "A személyi edzővel való edzés struktúrát és motivációt ad, de az önálló fejlődéskövetés háttérbe szorul.",
+    "A vizuális visszajelzések és digitális trófeák (pl. futóappos érmek) erősen motiváló hatásúak számára.",
+    "Fontosnak tartja, hogy egy app többféle mozgásformát tudjon kezelni (súlyzós, kardió, futás, bicikli), de ne legyen túlzsúfolt."
+  ],
+  "pain_points": [
+    "Jelenleg nem követi pontosan a súlyokat vagy gyakorlatokat, mivel az edző irányít mindent.",
+    "A futópad és a Google Health adatai pontatlanok óra hiányában, így nem megbízható a fejlődésmérés.",
+    "Nem talál olyan alkalmazást, ami gépekre és gyakorlatokra lebontva segítene az edzések naplózásában."
+  ],
+  "quotes": [
+    "\"Még motivált vagyok, és ez idő alatt még nem veszítettem el a motivációmat.\"",
+    "\"A futópad appban tök jó volt, hogy kaptál érmeket: 10 nap, 10 km, 50 km – ez motiváló.\"",
+    "\"Tök jó lenne, ha gépekre lebontva lehetne követni, hogy milyen súllyal, hány szériát csináltam.\"",
+    "\"Nem tudom, van-e ilyen app egyáltalán, ami ezt így tudja, de szerintem nagyon hasznos lenne.\""
+  ]
+}

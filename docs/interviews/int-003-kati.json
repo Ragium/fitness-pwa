@@ -1,0 +1,26 @@
+{
+  "id": "INT-003",
+  "date": "2025-10-17",
+  "method": "in-person",
+  "participant": {
+    "pseudonym": "Kati",
+    "segment": "35 éves dolgozó, családanya, személyi edzővel edző hobbisportoló"
+  },
+  "consent": true,
+  "insights": [
+    "A személyi edzőre hagyatkozva edz, így nem érez igényt saját naplózásra, de emiatt nem tudja önállóan nyomon követni a fejlődését.",
+    "A motiváció számára elsősorban a pénzügyi elköteleződésből és a személyi edző jelenlétéből fakad, nem az appos visszajelzésekből.",
+    "Szükségét érzi a vizuális fejlődéskövetésnek (grafikon, súlyváltozás, ismétlésszám), ami növelné a motivációját, ha egyedül edzene."
+  ],
+  "pain_points": [
+    "Önálló edzés esetén nem tudná pontosan követni, milyen súlyokkal és gyakorlatokkal dolgozik.",
+    "A korábban próbált 28-30 napos edzésappok túl kötöttek voltak, hamar elvesztette az érdeklődését.",
+    "Nincs olyan app, ami gépekre bontva rögzítené a gyakorlatokat és súlyokat."
+  ],
+  "quotes": [
+    "\"A motiváció alapból abból is ered, hogy a pénzt kifizeted rá, ezért nem vagy lusta elmenni az edzésekre.\"",
+    "\"Amikor saját magam edzettem, akkor azért volt ilyen egy-két hónapon belül, hogy nem volt már motiváció.\"",
+    "\"Tök jó lenne, ha havi rendszerességgel látnám egy diagrammon a fejlődést, gyakorlatonként is akár.\"",
+    "\"Nem is nagyon találtam még olyan appot, ami gépekre lebontva tudná rögzíteni, hogy milyen súllyal dolgoztam.\""
+  ]
+}

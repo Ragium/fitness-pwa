@@ -1,0 +1,64 @@
+<section class="progress-card" aria-label="Fejlődésmutató">
+  <p class="eyebrow">Fejlődésmutató</p>
+  <h2>Heti összvolumen</h2>
+
+  <!-- Utolsó szinkron ideje (US-05 AC2) -->
+  <p class="last-sync" *ngIf="lastSyncedAt; else neverSynced">
+    Utolsó szinkron: <time [dateTime]="lastSyncedAt">{{ lastSyncedAt | date: 'yyyy. MMM d. HH:mm' }}</time>
+  </p>
+  <ng-template #neverSynced>
+    <p class="last-sync muted">Még nem volt szinkron</p>
+  </ng-template>
+
+  <!-- Heti volumenchart (SVG) -->
+  <div class="chart-wrap" role="img" [attr.aria-label]="'Heti volumenchart'">
+    <svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- Alap vonal -->
+      <line x1="0" y1="89" x2="280" y2="89" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+
+      <!-- Oszlopok -->
+      <ng-container *ngFor="let day of weeklyVolume; let i = index">
+        <rect
+          [attr.x]="i * 40 + 4"
+          [attr.y]="barY(day.volume)"
+          width="32"
+          [attr.height]="barHeight(day.volume)"
+          [class.bar]="true"
+          [class.bar--active]="day.volume > 0"
+          rx="4"
+        />
+        <!-- Nap label -->
+        <text
+          [attr.x]="i * 40 + 20"
+          y="104"
+          text-anchor="middle"
+          class="bar-label"
+        >{{ day.label }}</text>
+        <!-- Volumen érték ha van -->
+        <text
+          *ngIf="day.volume > 0"
+          [attr.x]="i * 40 + 20"
+          [attr.y]="barY(day.volume) - 4"
+          text-anchor="middle"
+          class="bar-value"
+        >{{ day.volume }}</text>
+      </ng-container>
+    </svg>
+  </div>
+
+  <!-- Personal records -->
+  <div class="records" *ngIf="personalRecords.length">
+    <p class="eyebrow" style="margin-top: 1.25rem">Személyes rekordok</p>
+    <ul class="records-list">
+      <li *ngFor="let pr of personalRecords" class="record-row">
+        <span class="record-exercise">{{ pr.exercise }}</span>
+        <span class="record-weight">{{ pr.maxWeight }} kg</span>
+        <span class="record-date">{{ pr.date | date: 'yyyy. MMM d.' }}</span>
+      </li>
+    </ul>
+  </div>
+
+  <p class="empty-hint" *ngIf="!workouts.length">
+    Még nincs edzésbejegyzésed — rögzítsd az első szettet!
+  </p>
+</section>

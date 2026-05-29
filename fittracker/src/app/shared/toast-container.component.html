@@ -1,0 +1,6 @@
+<div class="toast-wrapper" aria-live="assertive">
+  <div *ngFor="let toast of toasts" class="toast" [class]="toast.level">
+    <p>{{ toast.text }}</p>
+    <button type="button" aria-label="Értesítés bezárása" (click)="dismiss(toast.id)">×</button>
+  </div>
+</div>

@@ -1,0 +1,27 @@
+<section class="summary-card" aria-live="polite">
+  <p class="eyebrow">Gyors visszajelzés</p>
+  <h2>Napi mérőszámok</h2>
+
+  <div class="stats-grid">
+    <div>
+      <span>Összvolumen</span>
+      <strong>{{ summary?.totalVolume ?? 0 }} kg</strong>
+    </div>
+    <div>
+      <span>Rögzített sorozat</span>
+      <strong>{{ summary?.totalSets ?? 0 }}</strong>
+    </div>
+    <div>
+      <span>Aktuális streak</span>
+      <strong>{{ summary?.streakDays ?? 0 }} nap</strong>
+    </div>
+  </div>
+
+  <div class="recent">
+    <span>Utolsó három edzés</span>
+    <ul>
+      <li *ngFor="let date of summary?.lastThreeSessions">{{ date | date: 'yyyy. MMM d.' }}</li>
+      <li *ngIf="!summary?.lastThreeSessions?.length">Nincs adat</li>
+    </ul>
+  </div>
+</section>

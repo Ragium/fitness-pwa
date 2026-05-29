@@ -1,0 +1,13 @@
+name,url,pricing_model,key_strengths,key_weaknesses
+Strong,https://www.strong.app,Freemium (~$5/hó),"Intuitive UI, Tiszta design, Gyors edzésnaplózás","Expensive premium, iOS bias, Limited exercise DB"
+Hevy,https://www.hevyapp.com,Ingyenes,"Teljesen ingyenes, Aktív közösség, Modern interface","New platform, Smaller community, Missing features"
+FitNotes,https://play.google.com/store/apps/details?id=com.github.jamesgay.fitnotes,Ingyenes,"Teljes offline, Egyszerűség, Nincs reklám","Android only, Limited features, No cloud sync"
+Jefit,https://www.jefit.com,Freemium (~$7/hó),"Hatalmas gyakorlat DB, Részletes analytics, Cross-platform","Complex UI, Ads in free version, Overwhelming for beginners"
+Strava,https://www.strava.com,Freemium (~$8/hó),"Legnagyobb közösség, Social features, Brand recognition","Not for gym workouts, Limited strength training, Social pressure"
+MyFitnessPal,https://www.myfitnesspal.com,Freemium (~$20/hó),"Comprehensive nutrition DB, Barcode scanner, Integration","Expensive premium, Not workout focused, Complex interface"
+Nike Training Club,https://www.nike.com/nike-training-club,Ingyenes,"Professional workouts, Video content, Brand trust","No custom workouts, Limited tracking, Video dependent"
+StrengthLog,https://www.strengthlog.com,Ingyenes,"Teljesen ingyenes, Clean design, Good analytics","Strength only, Limited customization, Basic social features"
+Simple Workout Log,https://www.simpleworkoutlog.com,Freemium (~$3),"Minimalist, Web access, Low resource usage","Outdated design, Limited features, Poor mobile UX"
+Fitbod,https://www.fitbod.me,Fizetős (~$10/hó),"AI workout generation, Personalization, Smart progression","Expensive, Complex for beginners, Subscription required"
+GymKeeper,https://play.google.com/store/apps/details?id=com.andromedaastronomers.gymworkout,Fizetős (~$9),"Full offline, Photo support, Measurement tracking","Paid only, Android only, Limited community"
+FitHero,https://apps.apple.com/us/app/fithero-daily-workout-tracker/id1538558647,Freemium (~$1),"Simple interface, Low cost, Basic functionality","Too basic, Limited analytics, Minimal features"

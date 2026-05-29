@@ -1,0 +1,28 @@
+{
+  "id": "INT-005",
+  "date": "2025-10-17",
+  "method": "online",
+  "participant": {
+    "pseudonym": "Feri",
+    "segment": "27 éves dolgozó férfi, PPL split szerint edző hobbisportoló; Google Drive-ban naplóz"
+  },
+  "consent": true,
+  "insights": [
+    "Tudatosan követi a fejlődést Google Drive-ban (napokra bontva, bukásig végzett súlyokkal), ez segíti a progresszió láthatóságát.",
+    "A “motiváció helyett célok” szemléletet vallja, mégis 8–12 hetes ciklusok után demotiválódik; eszközt keres a hullámvölgyek áthidalására.",
+    "Utazáskor/gyenge lefedettségnél értékelné az offline naplózást, hogy ne jegyzetappokban kallódjanak az adatok.",
+    "A közösségi/gamifikált megoldások (streak, napi feladat, ranglista) és erősebb nudging értesítések növelnék a rendszerességet."
+  ],
+  "pain_points": [
+    "“Ingyenesnek” hirdetett appok agresszív paywall mögött; a valódi tartalom drága előfizetéshez kötött.",
+    "A 28–30 napos “csodaprogramok” alacsony terhelést adnak és nem hoznak értelmes eredményt.",
+    "A kézi/noteszes naplózás szétszórttá és átláthatatlanná válik, hosszabb távon elvesznek a bejegyzések."
+  ],
+  "quotes": [
+    "\"Alapvetően motivációm az nincs; célok vannak, amiket próbálok elérni.\"",
+    "\"Harmadjára vittem végig egy 30 napos, nettó 15 perces edzést – rájöttem, hogy ennek túl sok értelme nincsen.\"",
+    "\"Utazáskor jól jönne az offline tracking – ne jegyzetappba kelljen írni, ami később elkavarodik.\"",
+    "\"Duolingó-jellegű napi feladatok, streak és ranglista szerintem tök jók lennének.\"",
+    "\"Legyen olyan értesítés, ami ‘rugdossa’ az embert, hogy menjen le edzeni – ez motiváló lenne.\""
+  ]
+}

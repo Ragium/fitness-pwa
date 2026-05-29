@@ -1,0 +1,74 @@
+<section class="workouts">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">FitTracker · Offline-first</p>
+      <h1>Jegyezd fel a sorozatot 10 mp-en belül</h1>
+      <p class="description">
+        Az adatok először az eszközödön tárolódnak, majd kapcsolat esetén automatikusan szinkronizálunk a Firestore-ba.
+      </p>
+
+      <div class="status-pill" [class.offline]="!(online$ | async)">
+        <span class="dot"></span>
+        {{ (online$ | async) ? 'Online' : 'Offline' }}
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <div class="session-box" *ngIf="(session$ | async) as session; else guestBlock">
+        <p class="session-email">{{ session.email }}</p>
+        <button type="button" (click)="logout()" class="btn-logout">Kijelentkezés</button>
+      </div>
+      <ng-template #guestBlock>
+        <a routerLink="/login" class="btn-login">Bejelentkezés</a>
+      </ng-template>
+
+      <button class="sync-btn" type="button" (click)="manualSync()">
+        <span>Szinkron újra</span>
+        <span class="counter" *ngIf="(pendingCount$ | async) as pending">{{ pending }} vár</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="content-grid">
+    <aside>
+      <app-summary-card [summary]="summary$ | async"></app-summary-card>
+      <app-progress-card [workouts]="(workouts$ | async) ?? []"></app-progress-card>
+      <app-workout-form (save)="handleSave($event)"></app-workout-form>
+
+      <div>
+        <p><strong>Offline POC</strong> (nyers gombok)</p>
+        <button type="button" (click)="saveSampleSession()">POC mentés</button>
+        <button type="button" (click)="loadSampleSessions()">POC betöltés</button>
+        <div class="poc-list" *ngIf="lastLoadedSessions.length">
+          <div class="poc-item" *ngFor="let s of lastLoadedSessions">
+            <p><strong>Kezdés:</strong> {{ s.startedAt | date: 'short' }}</p>
+            <ul>
+              <li *ngFor="let ex of s.exercises">
+                {{ ex.name }} — {{ ex.sets.length }} szett
+              </li>
+            </ul>
+            <p *ngIf="s.notes">{{ s.notes }}</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="list-wrapper">
+      <ng-container *ngIf="(workouts$ | async) as workouts">
+        <app-empty-state-card
+          *ngIf="!workouts.length"
+          [isOffline]="!(online$ | async)"
+          (primaryCta)="openForm()"
+        />
+
+        <app-workout-list
+          *ngIf="workouts.length"
+          [workouts]="workouts"
+          (retry)="handleRetry($event)"
+          (edit)="handleEdit($event)"
+          (delete)="handleDelete($event)"
+        ></app-workout-list>
+      </ng-container>
+    </section>
+  </div>
+</section>

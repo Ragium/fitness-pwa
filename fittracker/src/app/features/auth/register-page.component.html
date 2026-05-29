@@ -1,0 +1,44 @@
+<section class="login">
+  <div class="login-card">
+    <p class="eyebrow">US-00 · Regisztráció</p>
+    <h1>Hozz létre FitTracker fiókot</h1>
+    <p class="lead">
+      A regisztráció online történik Firebase Auth segítségével. Az első belépés után offline is használhatod a PWA-t.
+    </p>
+
+    <div class="status-pill" [class.offline]="!(online$ | async)">
+      <span class="dot"></span>
+      {{ (online$ | async) ? 'Online kapcsolat aktív' : 'Offline mód – regisztrációhoz internet kell' }}
+    </div>
+
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        <span>Email cím</span>
+        <input type="email" formControlName="email" placeholder="pl. anna@fittracker.app" autocomplete="username" />
+        <small *ngIf="emailInvalid">Adj meg valós email címet.</small>
+      </label>
+
+      <label>
+        <span>Jelszó</span>
+        <input type="password" formControlName="password" placeholder="minimum 6 karakter" autocomplete="new-password" />
+        <small *ngIf="passwordInvalid">A jelszó minimum 6 karakter.</small>
+      </label>
+
+      <label>
+        <span>Jelszó megerősítése</span>
+        <input type="password" formControlName="confirm" placeholder="ismételd a jelszót" autocomplete="new-password" />
+        <small *ngIf="confirmInvalid">A jelszavaknak egyezniük kell.</small>
+      </label>
+
+      <button type="submit" [disabled]="loading || form.invalid || form.value.password !== form.value.confirm">
+        {{ loading ? 'Regisztráció...' : 'Fiók létrehozása' }}
+      </button>
+    </form>
+
+    <p class="hint">
+      Már van fiókod? <a routerLink="/login">Lépj be</a>
+    </p>
+
+    <a class="back-link" routerLink="/workouts">Vissza az edzéslistára</a>
+  </div>
+</section>

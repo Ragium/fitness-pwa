@@ -1,0 +1,121 @@
+:host {
+  display: block;
+  background: rgba(15, 22, 32, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 1.5rem;
+  color: #e2e8f0;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin: 0 0 0.25rem;
+}
+
+h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f8fafc;
+  margin: 0 0 0.5rem;
+}
+
+.last-sync {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0 0 1rem;
+
+  time {
+    color: #38bdf8;
+  }
+
+  &.muted {
+    color: #475569;
+    font-style: italic;
+  }
+}
+
+.chart-wrap {
+  margin: 0.75rem 0;
+
+  svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+}
+
+.bar {
+  fill: rgba(255, 255, 255, 0.06);
+  transition: fill 0.2s ease;
+
+  &--active {
+    fill: url(#barGradient);
+    fill: #38bdf8;
+    opacity: 0.85;
+  }
+}
+
+.bar-label {
+  fill: #64748b;
+  font-size: 9px;
+  font-family: inherit;
+}
+
+.bar-value {
+  fill: #94a3b8;
+  font-size: 8px;
+  font-family: inherit;
+}
+
+// Personal records
+.records-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.record-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.record-exercise {
+  flex: 1;
+  font-weight: 500;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.record-weight {
+  font-weight: 700;
+  color: #38bdf8;
+  min-width: 3.5rem;
+  text-align: right;
+}
+
+.record-date {
+  font-size: 0.75rem;
+  color: #475569;
+  min-width: 5.5rem;
+  text-align: right;
+}
+
+.empty-hint {
+  font-size: 0.85rem;
+  color: #475569;
+  font-style: italic;
+  margin-top: 1rem;
+}

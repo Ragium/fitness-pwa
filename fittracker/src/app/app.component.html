@@ -1,0 +1,15 @@
+<div class="app-shell">
+  <header class="app-header">
+    <a routerLink="/workouts" class="brand">FitTracker</a>
+    <nav>
+      <a routerLink="/workouts">Edzéslista</a>
+      <a routerLink="/login">Bejelentkezés</a>
+    </nav>
+  </header>
+
+  <main>
+    <router-outlet></router-outlet>
+  </main>
+</div>
+
+<app-toast-container />

@@ -1,0 +1,22 @@
+base_url: "http://localhost:4200"
+steps:
+  - name: "root responds"
+    method: GET
+    path: "/"
+    expect_status: 200
+  - name: "login route"
+    method: GET
+    path: "/auth/login"
+    expect_status: 200
+  - name: "manifest served"
+    method: GET
+    path: "/manifest.webmanifest"
+    expect_status: 200
+  - name: "service worker config"
+    method: GET
+    path: "/ngsw.json"
+    expect_status: 200
+  - name: "pwa icon"
+    method: GET
+    path: "/icons/icon-192x192.png"
+    expect_status: 200

@@ -1,0 +1,14 @@
+<section class="empty-card" aria-live="polite">
+  <div class="badge" [class.offline]="isOffline">
+    <span class="dot"></span>
+    {{ isOffline ? 'Offline mód aktív' : 'Online kapcsolat aktív' }}
+  </div>
+
+  <h2>Nincs még edzésed</h2>
+  <p>
+    A FitTracker minden sorozatot először lokálisan ment, így kapcsolat nélkül sem maradsz le. Koppints a gombra és
+    rögzítsd az első súlyzós szetted!
+  </p>
+
+  <button type="button" (click)="handleClick()">Új sorozat hozzáadása</button>
+</section>

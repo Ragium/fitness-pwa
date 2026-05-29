@@ -1,0 +1,49 @@
+rules_version = '2';
+
+/*
+  Core adatszerkezet:
+  - /workouts/{workoutId}: meta + ownerId
+    - /exercises/{exerciseId}: name, muscleGroup, note
+      - /sets/{setId}: weight, repetitions, rpe, note
+
+  Jogosultság:
+  - Csak bejelentkezett felhasználó érheti el.
+  - Egy workoutot és alkollekcióit csak a saját ownerId-jával egyező user írhat/olvashat.
+*/
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(resourceData) {
+      return isSignedIn() && resourceData.ownerId == request.auth.uid;
+    }
+
+    match /workouts/{workoutId} {
+      allow read: if isOwner(resource.data);
+      allow create: if isOwner(request.resource.data);
+      allow update, delete: if isOwner(resource.data);
+
+      // Gyakorlatok a workout alatt
+      match /exercises/{exerciseId} {
+        allow read, create, update, delete: if
+          isSignedIn() &&
+          get(/databases/$(database)/documents/workouts/$(workoutId)).data.ownerId == request.auth.uid;
+
+        // Szettek egy gyakorlat alatt
+        match /sets/{setId} {
+          allow read, create, update, delete: if
+            isSignedIn() &&
+            get(/databases/$(database)/documents/workouts/$(workoutId)).data.ownerId == request.auth.uid;
+        }
+      }
+    }
+
+    // Minden más kollekció tiltott
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
